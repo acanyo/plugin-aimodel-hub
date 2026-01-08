@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'com.xhhao.aimodelhub'
+    version = project.findProperty('version') ?: '1.0.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/releases' }
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    }
+}

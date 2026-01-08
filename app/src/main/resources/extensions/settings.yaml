@@ -1,0 +1,53 @@
+apiVersion: v1alpha1
+kind: Setting
+metadata:
+  name: aimodel-hub-settings
+spec:
+  forms:
+    - group: provider
+      label: 模型供应商
+      formSchema:
+        - $formkit: group
+          name: openai
+          label: OpenAI
+          help: 支持遵循 OpenAI 接口规范的模型，需要修改接口地址。
+          children:
+            - $formkit: text
+              name: baseUrl
+              label: 接口地址
+              help: "默认为 OpenAI 官方地址，可修改为代理或兼容接口地址"
+              placeholder: https://api.openai.com
+              value: "https://api.openai.com"
+
+            - $formkit: password
+              name: apiKey
+              label: API Key
+              placeholder: sk-xxxxxxxxxxxxxxxx
+
+            - $formkit: select
+              name: model
+              label: 默认模型
+              help: 可从下拉列表选择或自定义输入模型名称
+              value: gpt-4o
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: GPT-4o
+                  value: gpt-4o
+                - label: GPT-4o Mini
+                  value: gpt-4o-mini
+                - label: GPT-4 Turbo
+                  value: gpt-4-turbo
+                - label: GPT-4
+                  value: gpt-4
+                - label: GPT-3.5 Turbo
+                  value: gpt-3.5-turbo
+                - label: o1
+                  value: o1
+                - label: o1-mini
+                  value: o1-mini
+                - label: o1-pro
+                  value: o1-pro
+                - label: o3-mini
+                  value: o3-mini

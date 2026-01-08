@@ -1,0 +1,9 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+rootProject.name = 'plugin-aimodel-hub'
+include 'api'
+include 'app'
+include 'ui'

@@ -1,0 +1,44 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id "io.freefair.lombok" version "8.13"
+}
+
+group = rootProject.group
+version = rootProject.version
+
+java {
+    withSourcesJar()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+javadoc.options.encoding = "UTF-8"
+
+dependencies {
+    api platform('run.halo.tools.platform:plugin:2.22.0')
+    compileOnly 'run.halo.app:api'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    repositories {
+        mavenLocal()
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'aimodel-hub-api'
+        }
+    }
+}
