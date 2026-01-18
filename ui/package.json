@@ -21,9 +21,14 @@
     "@halo-dev/api-client": "^2.22.0",
     "@halo-dev/components": "^2.22.0",
     "@halo-dev/ui-shared": "^2.22.0",
+    "@vueuse/router": "^12.8.2",
+    "@formkit/core": "^1.4.0",
+    "@formkit/vue": "^1.4.0",
+    "@formkit/themes": "^1.4.0",
     "axios": "^1.7.2",
     "canvas-confetti": "^1.9.3",
-    "vue": "^3.5.17"
+    "vue": "^3.5.17",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@rsbuild/core": "^1.4.3",

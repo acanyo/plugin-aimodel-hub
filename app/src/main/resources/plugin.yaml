@@ -15,7 +15,7 @@ spec:
   homepage: https://github.com/Handsome/aimodel-hub#readme
   repo: https://github.com/Handsome/aimodel-hub
   issues: https://github.com/Handsome/aimodel-hub/issues
-  displayName: "AI Model Hub"
+  displayName: "AI 模型聚合接口"
   description: "AI Model Hub - 为 Halo 提供统一的 AI 模型接口服务"
   license:
     - name: "GPL-3.0"

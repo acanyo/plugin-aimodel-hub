@@ -8,6 +8,15 @@ importers:
 
   ui:
     dependencies:
+      '@formkit/core':
+        specifier: ^1.4.0
+        version: 1.7.2
+      '@formkit/themes':
+        specifier: ^1.4.0
+        version: 1.7.2
+      '@formkit/vue':
+        specifier: ^1.4.0
+        version: 1.7.2(vue@3.5.26(typescript@5.8.3))
       '@halo-dev/api-client':
         specifier: ^2.22.0
         version: 2.22.0(axios@1.13.2)
@@ -17,6 +26,9 @@ importers:
       '@halo-dev/ui-shared':
         specifier: ^2.22.0
         version: 2.22.0(axios@1.13.2)(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))(vue@3.5.26(typescript@5.8.3))
+      '@vueuse/router':
+        specifier: ^12.8.2
+        version: 12.8.2(typescript@5.8.3)(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))
       axios:
         specifier: ^1.7.2
         version: 1.13.2
@@ -26,6 +38,9 @@ importers:
       vue:
         specifier: ^3.5.17
         version: 3.5.26(typescript@5.8.3)
+      vue-router:
+        specifier: ^4.5.0
+        version: 4.6.4(vue@3.5.26(typescript@5.8.3))
     devDependencies:
       '@halo-dev/ui-plugin-bundler-kit':
         specifier: ^2.22.0
@@ -370,6 +385,38 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@formkit/core@1.7.2':
+    resolution: {integrity: sha512-XDRVqkDtOziU3z44hdvgWEqGpiv6nTNeCmP8cnESKkr24a4keQuEwmfDVvibYV0ywyTMg6ylp2lyklCYeRHykQ==}
+
+  '@formkit/dev@1.7.2':
+    resolution: {integrity: sha512-W38xbbFS4h4LTV22kUC6ZbPHBmlM2lVbAz5PSYU3SPaNc4FeXp4GTe4GzLEmcS82B+5L1zbSOgGB43kWZts7wA==}
+
+  '@formkit/i18n@1.7.2':
+    resolution: {integrity: sha512-Zs6f+rtP2j2Nnt1HkNrL85WU6rtS1l1Q0BAQjCMGQPsbrppiL7/TZ5bNIrVm0DTntLgG3firDS7bNWAxPSwerQ==}
+
+  '@formkit/inputs@1.7.2':
+    resolution: {integrity: sha512-4xs7RJN8EFGctTCNRXBTvor2O8RvuEEK3q2Hl/RMU5lhhn5tmck90fkkeAr9o+rWRoSNiV8XgbLQArQ/B1IYPw==}
+
+  '@formkit/observer@1.7.2':
+    resolution: {integrity: sha512-KUr5mcu2SAeHOOK1FaMyFigtA8hkHLsUkaPFWpTC81j79o1AUjJppmfPaX6PbtlHLeMs2Zq8Qhp6VAhi7D2WJg==}
+
+  '@formkit/rules@1.7.2':
+    resolution: {integrity: sha512-2e5qKlXzmL9LAetncFp7xkHEX/UAJsU3bo1iL3idloH3HALf5fIdg3lgOKwCNDMdLjbfiKJ6lVwFaeFfFpcDKw==}
+
+  '@formkit/themes@1.7.2':
+    resolution: {integrity: sha512-AaZHy7l9D44Ya3cQRqZ8RIpaTTsCjTB1gX13NlpqYSs6yG0yBTmJ7L7kW60bOGdhs/vmIwSel578EBwz98nybQ==}
+
+  '@formkit/utils@1.7.2':
+    resolution: {integrity: sha512-bBF6alUBOqFfJHjVB95Vck0hp36vlw4QfFJxGfTO6BX68AEaFzzzabtpwfy0DbcHtwHh4Yn7l/rOWGxXEve+QQ==}
+
+  '@formkit/validation@1.7.2':
+    resolution: {integrity: sha512-JJsLP7AI/++VujdwtBeUcPhCqY3FXSKZ7hajT7Ow5Feab7JLqVPjxVMFbXDgEOLjq0ex1NX/I+EQHfm5sqMRsA==}
+
+  '@formkit/vue@1.7.2':
+    resolution: {integrity: sha512-jrvXl2ZhS6X5klTbP4N5zc0Dg37AjbAf8SCVoz7mfligVkmwrrF4SN3waMBcH+n9gqT+vrkOYb6bQXdvjUdnCQ==}
+    peerDependencies:
+      vue: ^3.4.0
 
   '@halo-dev/api-client@2.22.0':
     resolution: {integrity: sha512-gJKJWQxG2nzcANrRddED9P0pefmdanWm0+kV3cgGrtqnF6ULnckB4KIKUPmMOwdCBg1QEPQ30Txc9AfYwlu4kQ==}
@@ -1074,6 +1121,14 @@ packages:
         optional: true
       vue:
         optional: true
+
+  '@vueuse/router@12.8.2':
+    resolution: {integrity: sha512-TA3aXhi9uEzYA6shaEeC3tfU73KYFbUiRd4ssh4JVi52fZZgSmZAsS7M5nFu01TzUHfHlNhFEAYJpt5HPNi49Q==}
+    peerDependencies:
+      vue-router: '>=4.0.0-rc.1'
+
+  '@vueuse/shared@12.8.2':
+    resolution: {integrity: sha512-dznP38YzxZoNloI0qpEfpkms8knDtaoQ6Y/sfS0L7Yki4zh40LFHEhur0odJC6xTHG5dxWVPiUWBXn+wCG2s5w==}
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -2888,6 +2943,62 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
+  '@formkit/core@1.7.2':
+    dependencies:
+      '@formkit/utils': 1.7.2
+
+  '@formkit/dev@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/utils': 1.7.2
+
+  '@formkit/i18n@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/utils': 1.7.2
+      '@formkit/validation': 1.7.2
+
+  '@formkit/inputs@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/utils': 1.7.2
+
+  '@formkit/observer@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/utils': 1.7.2
+
+  '@formkit/rules@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/utils': 1.7.2
+      '@formkit/validation': 1.7.2
+
+  '@formkit/themes@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+
+  '@formkit/utils@1.7.2': {}
+
+  '@formkit/validation@1.7.2':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/observer': 1.7.2
+      '@formkit/utils': 1.7.2
+
+  '@formkit/vue@1.7.2(vue@3.5.26(typescript@5.8.3))':
+    dependencies:
+      '@formkit/core': 1.7.2
+      '@formkit/dev': 1.7.2
+      '@formkit/i18n': 1.7.2
+      '@formkit/inputs': 1.7.2
+      '@formkit/observer': 1.7.2
+      '@formkit/rules': 1.7.2
+      '@formkit/themes': 1.7.2
+      '@formkit/utils': 1.7.2
+      '@formkit/validation': 1.7.2
+      vue: 3.5.26(typescript@5.8.3)
+
   '@halo-dev/api-client@2.22.0(axios@1.13.2)':
     dependencies:
       axios: 1.13.2
@@ -3588,6 +3699,20 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
       vue: 3.5.26(typescript@5.8.3)
+
+  '@vueuse/router@12.8.2(typescript@5.8.3)(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))':
+    dependencies:
+      '@vueuse/shared': 12.8.2(typescript@5.8.3)
+      vue: 3.5.26(typescript@5.8.3)
+      vue-router: 4.6.4(vue@3.5.26(typescript@5.8.3))
+    transitivePeerDependencies:
+      - typescript
+
+  '@vueuse/shared@12.8.2(typescript@5.8.3)':
+    dependencies:
+      vue: 3.5.26(typescript@5.8.3)
+    transitivePeerDependencies:
+      - typescript
 
   '@webassemblyjs/ast@1.14.1':
     dependencies:
