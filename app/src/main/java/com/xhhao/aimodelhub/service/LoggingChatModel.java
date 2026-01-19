@@ -2,6 +2,7 @@ package com.xhhao.aimodelhub.service;
 
 import com.xhhao.aimodelhub.api.ChatMessage;
 import com.xhhao.aimodelhub.api.ChatModel;
+import com.xhhao.aimodelhub.extension.AiChatLog;
 import com.xhhao.aimodelhub.service.openai.OpenAiChatModel;
 import com.xhhao.aimodelhub.service.openai.OpenAiChatRequest;
 import com.xhhao.aimodelhub.service.openai.OpenAiChatResponse;
@@ -49,11 +50,11 @@ public class LoggingChatModel implements ChatModel {
         
         return delegate.chat(request)
             .doOnSuccess(response -> {
-                asyncLogChat(userMessage, false, startTime, response, null);
+                asyncLogChat(userMessage, AiChatLog.CallType.CHAT, startTime, response, null);
             })
             .doOnError(e -> {
                 // 异步记录错误日志
-                asyncLogError(userMessage, false, startTime, e);
+                asyncLogError(userMessage, AiChatLog.CallType.CHAT, startTime, e);
             })
             .map(OpenAiChatResponse::getContent);
     }
@@ -89,7 +90,7 @@ public class LoggingChatModel implements ChatModel {
                 asyncLogStreamChat(userMessage, startTime, fullResponse.toString(), usageRef.get());
             })
             .doOnError(e -> {
-                asyncLogError(userMessage, true, startTime, e);
+                asyncLogError(userMessage, AiChatLog.CallType.STREAM, startTime, e);
             });
     }
 
@@ -109,10 +110,10 @@ public class LoggingChatModel implements ChatModel {
         
         return delegate.chat(request)
             .doOnSuccess(response -> {
-                asyncLogChat(userMessage, false, startTime, response, null);
+                asyncLogChat(userMessage, AiChatLog.CallType.CHAT, startTime, response, null);
             })
             .doOnError(e -> {
-                asyncLogError(userMessage, false, startTime, e);
+                asyncLogError(userMessage, AiChatLog.CallType.CHAT, startTime, e);
             })
             .map(OpenAiChatResponse::getContent);
     }
@@ -152,14 +153,14 @@ public class LoggingChatModel implements ChatModel {
                 asyncLogStreamChat(userMessage, startTime, fullResponse.toString(), usageRef.get());
             })
             .doOnError(e -> {
-                asyncLogError(userMessage, true, startTime, e);
+                asyncLogError(userMessage, AiChatLog.CallType.STREAM, startTime, e);
             });
     }
 
     /**
      * 异步记录非流式请求日志
      */
-    private void asyncLogChat(String userMessage, boolean stream, long startTime, 
+    private void asyncLogChat(String userMessage, AiChatLog.CallType callType, long startTime, 
                              OpenAiChatResponse response, Throwable error) {
         Mono.fromRunnable(() -> {
             try {
@@ -169,7 +170,7 @@ public class LoggingChatModel implements ChatModel {
                 Integer completionTokens = usage != null ? usage.getCompletionTokens() : null;
                 
                 logService.logChat(callerPlugin, provider, delegate.getModelName(),
-                        userMessage, stream, startTime, promptTokens, completionTokens,
+                        userMessage, callType, startTime, promptTokens, completionTokens,
                         error == null, error != null ? error.getMessage() : null, content)
                     .subscribe(
                         saved -> log.debug("Chat log saved: {}", saved.getMetadata().getName()),
@@ -192,7 +193,7 @@ public class LoggingChatModel implements ChatModel {
                 Integer completionTokens = usage != null ? usage.getCompletionTokens() : null;
                 
                 logService.logChat(callerPlugin, provider, delegate.getModelName(),
-                        userMessage, true, startTime, promptTokens, completionTokens,
+                        userMessage, AiChatLog.CallType.STREAM, startTime, promptTokens, completionTokens,
                         true, null, fullResponse)
                     .subscribe(
                         saved -> log.debug("Stream chat log saved: {}", saved.getMetadata().getName()),
@@ -207,11 +208,11 @@ public class LoggingChatModel implements ChatModel {
     /**
      * 异步记录错误日志
      */
-    private void asyncLogError(String userMessage, boolean stream, long startTime, Throwable error) {
+    private void asyncLogError(String userMessage, AiChatLog.CallType callType, long startTime, Throwable error) {
         Mono.fromRunnable(() -> {
             try {
                 logService.logChat(callerPlugin, provider, delegate.getModelName(),
-                        userMessage, stream, startTime, null, null,
+                        userMessage, callType, startTime, null, null,
                         false, error.getMessage(), null)
                     .subscribe(
                         saved -> log.debug("Error log saved: {}", saved.getMetadata().getName()),

@@ -1,0 +1,651 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Halo",
+    "version" : "2.22.10"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:56476",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "basicAuth" : [ ],
+    "bearerAuth" : [ ]
+  } ],
+  "paths" : {
+    "/apis/aimodel-hub.xhhao.com/v1alpha1/aichatlogs" : {
+      "get" : {
+        "description" : "List AiChatLog",
+        "operationId" : "listAiChatLog",
+        "parameters" : [ {
+          "description" : "Page number. Default is 0.",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Size number. Default is 0.",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Label selector. e.g.: hidden!=true",
+          "in" : "query",
+          "name" : "labelSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Field selector. e.g.: metadata.name==halo",
+          "in" : "query",
+          "name" : "fieldSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AiChatLogList"
+                }
+              }
+            },
+            "description" : "Response aichatlogs"
+          }
+        },
+        "tags" : [ "AiChatLogV1alpha1" ]
+      },
+      "post" : {
+        "description" : "Create AiChatLog",
+        "operationId" : "createAiChatLog",
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AiChatLog"
+              }
+            }
+          },
+          "description" : "Fresh aichatlog"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AiChatLog"
+                }
+              }
+            },
+            "description" : "Response aichatlogs created just now"
+          }
+        },
+        "tags" : [ "AiChatLogV1alpha1" ]
+      }
+    },
+    "/apis/aimodel-hub.xhhao.com/v1alpha1/aichatlogs/{name}" : {
+      "delete" : {
+        "description" : "Delete AiChatLog",
+        "operationId" : "deleteAiChatLog",
+        "parameters" : [ {
+          "description" : "Name of aichatlog",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Response aichatlog deleted just now"
+          }
+        },
+        "tags" : [ "AiChatLogV1alpha1" ]
+      },
+      "get" : {
+        "description" : "Get AiChatLog",
+        "operationId" : "getAiChatLog",
+        "parameters" : [ {
+          "description" : "Name of aichatlog",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AiChatLog"
+                }
+              }
+            },
+            "description" : "Response single aichatlog"
+          }
+        },
+        "tags" : [ "AiChatLogV1alpha1" ]
+      },
+      "patch" : {
+        "description" : "Patch AiChatLog",
+        "operationId" : "patchAiChatLog",
+        "parameters" : [ {
+          "description" : "Name of aichatlog",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json-patch+json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/JsonPatch"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AiChatLog"
+                }
+              }
+            },
+            "description" : "Response aichatlog patched just now"
+          }
+        },
+        "tags" : [ "AiChatLogV1alpha1" ]
+      },
+      "put" : {
+        "description" : "Update AiChatLog",
+        "operationId" : "updateAiChatLog",
+        "parameters" : [ {
+          "description" : "Name of aichatlog",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AiChatLog"
+              }
+            }
+          },
+          "description" : "Updated aichatlog"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AiChatLog"
+                }
+              }
+            },
+            "description" : "Response aichatlogs updated just now"
+          }
+        },
+        "tags" : [ "AiChatLogV1alpha1" ]
+      }
+    },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs" : {
+      "get" : {
+        "description" : "获取 AI 聊天日志列表",
+        "operationId" : "ListAiChatLogs",
+        "parameters" : [ {
+          "description" : "页码",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "每页数量",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "调用者插件",
+          "in" : "query",
+          "name" : "callerPlugin",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "模型供应商",
+          "in" : "query",
+          "name" : "provider",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "模型名称",
+          "in" : "query",
+          "name" : "model",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "是否成功",
+          "in" : "query",
+          "name" : "success",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : { },
+        "tags" : [ "AiChatLogV1alpha1Console" ]
+      }
+    },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/stats" : {
+      "get" : {
+        "description" : "获取 AI 调用统计",
+        "operationId" : "GetAiChatLogStats",
+        "responses" : { },
+        "tags" : [ "AiChatLogV1alpha1Console" ]
+      }
+    },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/testchat/simple" : {
+      "post" : {
+        "description" : "测试简单对话（会记录日志）",
+        "operationId" : "TestSimpleChat",
+        "responses" : { },
+        "tags" : [ "TestChatV1alpha1Console" ]
+      }
+    },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/testchat/stream" : {
+      "post" : {
+        "description" : "测试流式对话（会记录日志）",
+        "operationId" : "TestStreamChat",
+        "responses" : { },
+        "tags" : [ "TestChatV1alpha1Console" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "AddOperation" : {
+        "required" : [ "op", "path", "value" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "add" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "value" : {
+            "description" : "Value can be any JSON value"
+          }
+        }
+      },
+      "AiChatLog" : {
+        "required" : [ "apiVersion", "kind", "metadata", "spec" ],
+        "type" : "object",
+        "properties" : {
+          "apiVersion" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
+          },
+          "spec" : {
+            "$ref" : "#/components/schemas/AiChatLogSpec"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/AiChatLogStatus"
+          }
+        }
+      },
+      "AiChatLogList" : {
+        "required" : [ "first", "hasNext", "hasPrevious", "items", "last", "page", "size", "total", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "first" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the first page."
+          },
+          "hasNext" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "hasPrevious" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "A chunk of items.",
+            "items" : {
+              "$ref" : "#/components/schemas/AiChatLog"
+            }
+          },
+          "last" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the last page."
+          },
+          "page" : {
+            "type" : "integer",
+            "description" : "Page number, starts from 1. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "description" : "Size of each page. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "description" : "Total elements.",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "description" : "Indicates total pages.",
+            "format" : "int64"
+          }
+        }
+      },
+      "AiChatLogSpec" : {
+        "required" : [ "model", "provider", "requestTime" ],
+        "type" : "object",
+        "properties" : {
+          "callType" : {
+            "type" : "string",
+            "description" : "调用类型",
+            "enum" : [ "CHAT", "STREAM", "EMBEDDING" ]
+          },
+          "callerPlugin" : {
+            "type" : "string",
+            "description" : "调用者插件名称"
+          },
+          "model" : {
+            "type" : "string",
+            "description" : "使用的模型名称"
+          },
+          "provider" : {
+            "type" : "string",
+            "description" : "模型供应商"
+          },
+          "requestTime" : {
+            "type" : "string",
+            "description" : "请求时间",
+            "format" : "date-time"
+          },
+          "userMessage" : {
+            "type" : "string",
+            "description" : "用户消息摘要"
+          }
+        }
+      },
+      "AiChatLogStatus" : {
+        "type" : "object",
+        "properties" : {
+          "completionTokens" : {
+            "type" : "integer",
+            "description" : "完成 token 数",
+            "format" : "int32"
+          },
+          "durationMs" : {
+            "type" : "integer",
+            "description" : "请求耗时（毫秒）",
+            "format" : "int64"
+          },
+          "errorMessage" : {
+            "type" : "string",
+            "description" : "错误信息"
+          },
+          "promptTokens" : {
+            "type" : "integer",
+            "description" : "提示词 token 数",
+            "format" : "int32"
+          },
+          "responseSummary" : {
+            "type" : "string",
+            "description" : "响应内容摘要"
+          },
+          "success" : {
+            "type" : "boolean",
+            "description" : "是否成功"
+          },
+          "totalTokens" : {
+            "type" : "integer",
+            "description" : "总 token 数",
+            "format" : "int32"
+          }
+        }
+      },
+      "CopyOperation" : {
+        "required" : [ "op", "from", "path" ],
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "op" : {
+            "type" : "string",
+            "enum" : [ "copy" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          }
+        }
+      },
+      "JsonPatch" : {
+        "minItems" : 1,
+        "uniqueItems" : true,
+        "type" : "array",
+        "description" : "JSON schema for JSONPatch operations",
+        "items" : {
+          "oneOf" : [ {
+            "$ref" : "#/components/schemas/AddOperation"
+          }, {
+            "$ref" : "#/components/schemas/ReplaceOperation"
+          }, {
+            "$ref" : "#/components/schemas/TestOperation"
+          }, {
+            "$ref" : "#/components/schemas/RemoveOperation"
+          }, {
+            "$ref" : "#/components/schemas/MoveOperation"
+          }, {
+            "$ref" : "#/components/schemas/CopyOperation"
+          } ]
+        }
+      },
+      "Metadata" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "annotations" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Annotations are like key-value format."
+          },
+          "creationTimestamp" : {
+            "type" : "string",
+            "description" : "Creation timestamp of the Extension.",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "deletionTimestamp" : {
+            "type" : "string",
+            "description" : "Deletion timestamp of the Extension.",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "finalizers" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "nullable" : true,
+            "items" : {
+              "type" : "string",
+              "nullable" : true
+            }
+          },
+          "generateName" : {
+            "type" : "string",
+            "description" : "The name field will be generated automatically according to the given generateName field"
+          },
+          "labels" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Labels are like key-value format."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Metadata name"
+          },
+          "version" : {
+            "type" : "integer",
+            "description" : "Current version of the Extension. It will be bumped up every update.",
+            "format" : "int64",
+            "nullable" : true
+          }
+        },
+        "description" : "Metadata of Extension."
+      },
+      "MoveOperation" : {
+        "required" : [ "op", "from", "path" ],
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "op" : {
+            "type" : "string",
+            "enum" : [ "move" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          }
+        }
+      },
+      "RemoveOperation" : {
+        "required" : [ "op", "path" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "remove" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          }
+        }
+      },
+      "ReplaceOperation" : {
+        "required" : [ "op", "path", "value" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "replace" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "value" : {
+            "description" : "Value can be any JSON value"
+          }
+        }
+      },
+      "TestOperation" : {
+        "required" : [ "op", "path", "value" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "test" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "value" : {
+            "description" : "Value can be any JSON value"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "basicAuth" : {
+        "scheme" : "basic",
+        "type" : "http"
+      },
+      "bearerAuth" : {
+        "bearerFormat" : "JWT",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  }
+}

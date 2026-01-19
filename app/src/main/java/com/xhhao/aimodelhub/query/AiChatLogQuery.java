@@ -6,6 +6,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.PageRequest;
 import run.halo.app.extension.PageRequestImpl;
+import static run.halo.app.extension.index.query.Queries.equal;
 
 /**
  * AI 聊天日志查询参数
@@ -63,8 +64,23 @@ public class AiChatLogQuery {
      * 转换为 ListOptions
      */
     public ListOptions toListOptions() {
-        // 暂时返回空的 ListOptions，在 Service 层进行过滤
-        return new ListOptions();
+        var builder = ListOptions.builder();
+        
+        // 使用 Queries API 构建查询条件
+        if (StringUtils.hasText(callerPlugin)) {
+            builder.andQuery(equal("spec.callerPlugin", callerPlugin));
+        }
+        if (StringUtils.hasText(provider)) {
+            builder.andQuery(equal("spec.provider", provider));
+        }
+        if (StringUtils.hasText(model)) {
+            builder.andQuery(equal("spec.model", model));
+        }
+        if (success != null) {
+            builder.andQuery(equal("status.success", String.valueOf(success)));
+        }
+        
+        return builder.build();
     }
 
     /**

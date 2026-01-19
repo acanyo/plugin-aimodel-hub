@@ -2,7 +2,7 @@
 import { VCard, VPageHeader, VButton, VSpace, VEmpty, VLoading, Toast } from '@halo-dev/components'
 import { FormKit } from '@formkit/vue'
 import { ref } from 'vue'
-import axios from 'axios'
+import { axiosInstance } from '@halo-dev/api-client'
 import RiSendPlaneLine from '~icons/ri/send-plane-line'
 import RiDeleteBinLine from '~icons/ri/delete-bin-line'
 import RiTestTubeLine from '~icons/ri/test-tube-line'
@@ -32,7 +32,7 @@ const testSimpleChat = async () => {
     loading.value = true
     response.value = ''
     
-    const { data } = await axios.post(
+    const { data } = await axiosInstance.post(
       '/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/testchat/simple',
       {
         message: message.value,
@@ -65,11 +65,12 @@ const testStreamChat = async () => {
   try {
     streamLoading.value = true
     streamResponse.value = ''
+    response.value = '' // 清空普通对话响应
     
     // 临时存储流式内容
     let tempContent = ''
     
-    const response = await fetch(
+    const fetchResponse = await fetch(
       '/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/testchat/stream',
       {
         method: 'POST',
@@ -84,11 +85,11 @@ const testStreamChat = async () => {
       }
     )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    if (!fetchResponse.ok) {
+      throw new Error(`HTTP error! status: ${fetchResponse.status}`)
     }
 
-    const reader = response.body?.getReader()
+    const reader = fetchResponse.body?.getReader()
     const decoder = new TextDecoder()
 
     if (!reader) {
@@ -140,7 +141,7 @@ const clearAll = () => {
 <template>
   <VPageHeader title="AI 调用测试">
     <template #icon>
-      <RiTestTubeLine class="mr-2 self-center" />
+      <RiTestTubeLine class=":uno: mr-2 self-center" />
     </template>
     <template #actions>
       <VButton size="sm" type="danger" @click="clearAll">
@@ -152,17 +153,17 @@ const clearAll = () => {
     </template>
   </VPageHeader>
 
-  <div class="m-0 md:m-4">
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+  <div class=":uno: m-0 md:m-4">
+    <div class=":uno: grid grid-cols-1 gap-4 lg:grid-cols-2">
       <!-- 左侧：输入区域 -->
       <VCard :body-class="['!p-6']">
         <template #header>
-          <div class="block w-full bg-gray-50 px-4 py-3">
-            <span class="text-base font-medium">测试配置</span>
+          <div class=":uno: block w-full bg-gray-50 px-4 py-3">
+            <span class=":uno: text-base font-medium">测试配置</span>
           </div>
         </template>
 
-        <div class="space-y-5">
+        <div class=":uno: space-y-5">
           <!-- 消息内容 -->
           <FormKit
             v-model="message"
@@ -174,33 +175,32 @@ const clearAll = () => {
             validation-visibility="blur"
           />
 
-          <!-- AI 供应商和模型 -->
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormKit
-              v-model="provider"
-              type="select"
-              label="AI 供应商"
-              :options="providers"
-            />
+          <!-- AI 供应商 -->
+          <FormKit
+            v-model="provider"
+            type="select"
+            label="AI 供应商"
+            :options="providers"
+          />
 
-            <FormKit
-              v-model="model"
-              type="text"
-              label="模型名称"
-              placeholder="可选，如: gpt-4o-mini"
-            />
-          </div>
+          <!-- 模型名称 -->
+          <FormKit
+            v-model="model"
+            type="text"
+            label="模型名称"
+            placeholder="如: gpt-4o-mini"
+          />
 
           <!-- 提示信息 -->
-          <div class="rounded-lg bg-blue-50 p-4">
-            <div class="flex">
-              <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+          <div class=":uno: rounded-lg bg-blue-50 p-4">
+            <div class=":uno: flex">
+              <div class=":uno: flex-shrink-0">
+                <svg class=":uno: h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
               </div>
-              <div class="ml-3">
-                <p class="text-sm text-blue-800">
+              <div class=":uno: ml-3">
+                <p class=":uno: text-sm text-blue-800">
                   测试结果会自动记录到日志中，可在"日志"页面查看详细记录。
                 </p>
               </div>
@@ -208,7 +208,7 @@ const clearAll = () => {
           </div>
 
           <!-- 操作按钮 -->
-          <div class="flex flex-col gap-3 sm:flex-row">
+          <div class=":uno: flex flex-col gap-3 sm:flex-row">
             <VButton
               class="flex-1"
               type="secondary"
@@ -237,41 +237,41 @@ const clearAll = () => {
       <!-- 右侧：响应区域 -->
       <VCard :body-class="['!p-6']">
         <template #header>
-          <div class="block w-full bg-gray-50 px-4 py-3">
-            <span class="text-base font-medium">响应结果</span>
+          <div class=":uno: block w-full bg-gray-50 px-4 py-3">
+            <span class=":uno: text-base font-medium">响应结果</span>
           </div>
         </template>
 
         <!-- 加载状态 -->
-        <div v-if="loading || streamLoading" class="flex min-h-[400px] items-center justify-center">
-          <div class="text-center">
+        <div v-if="loading || streamLoading" class=":uno: flex min-h-[400px] items-center justify-center">
+          <div class=":uno: text-center">
             <VLoading />
-            <p class="mt-4 text-sm text-gray-500">
+            <p class=":uno: mt-4 text-sm text-gray-500">
               {{ loading ? '正在调用 AI...' : '正在接收流式响应...' }}
             </p>
           </div>
         </div>
 
         <!-- 响应内容 -->
-        <div v-else-if="response || streamResponse" class="space-y-4">
+        <div v-else-if="response || streamResponse" class=":uno: space-y-4">
           <!-- 响应类型标签 -->
-          <div class="flex items-center gap-2">
-            <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+          <div class=":uno: flex items-center gap-2">
+            <span class=":uno: rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
               {{ response ? '普通对话' : '流式对话' }}
             </span>
-            <span class="text-xs text-gray-500">
+            <span class=":uno: text-xs text-gray-500">
               响应完成
             </span>
           </div>
           
           <!-- 响应内容 -->
-          <div class="min-h-[300px] whitespace-pre-wrap break-words rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-900">
+          <div class=":uno: min-h-[300px] whitespace-pre-wrap break-words rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-900">
             {{ response || streamResponse }}
           </div>
         </div>
 
         <!-- 空状态 -->
-        <div v-else class="flex min-h-[400px] items-center justify-center">
+        <div v-else class=":uno: flex min-h-[400px] items-center justify-center">
           <VEmpty
             title="等待测试"
             message="在左侧输入消息并点击测试按钮开始"

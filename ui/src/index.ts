@@ -1,6 +1,7 @@
 import { definePlugin } from '@halo-dev/ui-shared'
 import TestChat from './views/TestChat.vue'
 import ChatLogList from './views/ChatLogList.vue'
+import 'uno.css'
 import RiRobot2Line from '~icons/ri/robot-2-line'
 import RiTestTubeLine from '~icons/ri/test-tube-line'
 import RiFileListLine from '~icons/ri/file-list-line'

@@ -60,10 +60,10 @@ public class AiChatLog extends AbstractExtension {
         private String userMessage;
 
         /**
-         * 是否流式请求
+         * 调用类型（CHAT: 非流式, STREAM: 流式, EMBEDDING: 嵌入）
          */
-        @Schema(description = "是否流式请求")
-        private Boolean stream;
+        @Schema(description = "调用类型")
+        private CallType callType;
 
         /**
          * 请求时间
@@ -116,5 +116,23 @@ public class AiChatLog extends AbstractExtension {
          */
         @Schema(description = "响应内容摘要")
         private String responseSummary;
+    }
+
+    /**
+     * 调用类型枚举
+     */
+    public enum CallType {
+        /**
+         * 普通对话（非流式）
+         */
+        CHAT,
+        /**
+         * 流式对话
+         */
+        STREAM,
+        /**
+         * 文本嵌入
+         */
+        EMBEDDING
     }
 }

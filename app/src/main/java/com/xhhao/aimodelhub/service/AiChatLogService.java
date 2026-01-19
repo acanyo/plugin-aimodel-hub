@@ -12,9 +12,13 @@ import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.ReactiveExtensionClient;
 
+import org.springframework.data.domain.Sort;
+import run.halo.app.extension.PageRequestImpl;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -33,7 +37,7 @@ public class AiChatLogService {
      * 记录聊天日志
      */
     public Mono<AiChatLog> logChat(String callerPlugin, String provider, String model,
-                                   String userMessage, boolean stream, long startTime,
+                                   String userMessage, AiChatLog.CallType callType, long startTime,
                                    Integer promptTokens, Integer completionTokens,
                                    boolean success, String errorMessage, String response) {
         
@@ -50,7 +54,7 @@ public class AiChatLogService {
         spec.setProvider(provider);
         spec.setModel(model);
         spec.setUserMessage(truncate(userMessage, 500));
-        spec.setStream(stream);
+        spec.setCallType(callType);
         spec.setRequestTime(Instant.ofEpochMilli(startTime));
         chatLog.setSpec(spec);
         
@@ -75,107 +79,48 @@ public class AiChatLogService {
      * 查询日志列表
      */
     public Mono<ListResult<AiChatLog>> listLogs(AiChatLogQuery query) {
-        return client.listAll(AiChatLog.class, query.toListOptions(), null)
-            .filter(log -> {
-                // 根据查询条件过滤
-                if (query.getCallerPlugin() != null) {
-                    if (log.getSpec() == null || 
-                        !query.getCallerPlugin().equals(log.getSpec().getCallerPlugin())) {
-                        return false;
-                    }
-                }
-                if (query.getProvider() != null) {
-                    if (log.getSpec() == null || 
-                        !query.getProvider().equals(log.getSpec().getProvider())) {
-                        return false;
-                    }
-                }
-                if (query.getModel() != null) {
-                    if (log.getSpec() == null || 
-                        !query.getModel().equals(log.getSpec().getModel())) {
-                        return false;
-                    }
-                }
-                if (query.getSuccess() != null) {
-                    if (log.getStatus() == null || 
-                        !query.getSuccess().equals(log.getStatus().getSuccess())) {
-                        return false;
-                    }
-                }
-                return true;
-            })
-            .collectList()
-            .map(logs -> {
-                // 手动分页
-                int page = query.getPage();
-                int size = query.getSize();
-                int total = logs.size();
-                int start = (page - 1) * size;
-                int end = Math.min(start + size, total);
-                
-                var items = (start < total) ? logs.subList(start, end) : java.util.List.<AiChatLog>of();
-                
-                return new ListResult<>(page, size, total, items);
-            });
+        var sort = Sort.by(Sort.Order.desc("metadata.creationTimestamp"));
+        var pageRequest = PageRequestImpl.of(query.getPage(), query.getSize(), sort);
+        
+        return client.listBy(AiChatLog.class, query.toListOptions(), pageRequest);
     }
 
     /**
      * 获取统计信息
      */
     public Mono<AiChatLogStats> getStats() {
+        LocalDate today = LocalDate.now();
+        
         return client.listAll(AiChatLog.class, new ListOptions(), null)
-            .collectList()
-            .map(logs -> {
-                var stats = new AiChatLogStats();
-                stats.setTotalCalls(logs.size());
+            .reduce(new AiChatLogStats(), (stats, log) -> {
+                stats.setTotalCalls(stats.getTotalCalls() + 1);
                 
-                int successCount = 0;
-                long totalPromptTokens = 0;
-                long totalCompletionTokens = 0;
-                long totalTokens = 0;
-                long todayTokens = 0;
-                int todayCalls = 0;
-                
-                LocalDate today = LocalDate.now();
-                
-                for (var log : logs) {
-                    var status = log.getStatus();
-                    if (status != null) {
-                        if (Boolean.TRUE.equals(status.getSuccess())) {
-                            successCount++;
-                        }
-                        if (status.getPromptTokens() != null) {
-                            totalPromptTokens += status.getPromptTokens();
-                        }
-                        if (status.getCompletionTokens() != null) {
-                            totalCompletionTokens += status.getCompletionTokens();
-                        }
-                        if (status.getTotalTokens() != null) {
-                            totalTokens += status.getTotalTokens();
-                        }
+                Optional.ofNullable(log.getStatus()).ifPresent(status -> {
+                    if (Boolean.TRUE.equals(status.getSuccess())) {
+                        stats.setSuccessCount(stats.getSuccessCount() + 1);
+                    } else {
+                        stats.setFailCount(stats.getFailCount() + 1);
                     }
-                    
-                    // 统计今日
-                    var spec = log.getSpec();
-                    if (spec != null && spec.getRequestTime() != null) {
-                        LocalDate requestDate = spec.getRequestTime()
-                            .atZone(ZoneId.systemDefault()).toLocalDate();
-                        if (requestDate.equals(today)) {
-                            todayCalls++;
-                            if (status != null && status.getTotalTokens() != null) {
-                                todayTokens += status.getTotalTokens();
-                            }
-                        }
-                    }
-                }
+                    stats.setTotalPromptTokens(stats.getTotalPromptTokens() + 
+                        Optional.ofNullable(status.getPromptTokens()).orElse(0));
+                    stats.setTotalCompletionTokens(stats.getTotalCompletionTokens() + 
+                        Optional.ofNullable(status.getCompletionTokens()).orElse(0));
+                    stats.setTotalTokens(stats.getTotalTokens() + 
+                        Optional.ofNullable(status.getTotalTokens()).orElse(0));
+                });
                 
-                stats.setSuccessCount(successCount);
-                stats.setFailCount(logs.size() - successCount);
-                stats.setTotalPromptTokens(totalPromptTokens);
-                stats.setTotalCompletionTokens(totalCompletionTokens);
-                stats.setTotalTokens(totalTokens);
-                stats.setTodayCalls(todayCalls);
-                stats.setTodayTokens(todayTokens);
+                // 统计今日
+                Optional.ofNullable(log.getSpec())
+                    .map(AiChatLog.AiChatLogSpec::getRequestTime)
+                    .map(time -> time.atZone(ZoneId.systemDefault()).toLocalDate())
+                    .filter(today::equals)
+                    .ifPresent(date -> {
+                        stats.setTodayCalls(stats.getTodayCalls() + 1);
+                        stats.setTodayTokens(stats.getTodayTokens() + 
+                            Optional.ofNullable(log.getStatus())
+                                .map(AiChatLog.AiChatLogStatus::getTotalTokens)
+                                .orElse(0));
+                    });
                 
                 return stats;
             });

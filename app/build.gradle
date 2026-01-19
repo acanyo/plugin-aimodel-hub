@@ -14,7 +14,7 @@ jar {
 
 dependencies {
     implementation project(':api')
-    implementation platform('run.halo.tools.platform:plugin:2.22.0')
+    implementation platform('run.halo.tools.platform:plugin:2.22.5')
     compileOnly 'run.halo.app:api'
 
     testImplementation 'run.halo.app:api'
@@ -51,5 +51,26 @@ tasks.named('classes') {
 }
 
 halo {
-    version = '2.22.7'
+    containerName = 'AiModelHub'
+    version = '2.22.10'
+}
+haloPlugin {
+    openApi {
+        outputDir = file("$rootDir/api-docs/openapi/v3_0")
+        groupingRules {
+            aiModelHubApis {
+                displayName = 'AI Model Hub Console API'
+                pathsToMatch = [
+                        '/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/**',
+                        '/apis/aimodel-hub.xhhao.com/v1alpha1/**'
+                ]
+            }
+        }
+        groupedApiMappings = [
+                '/v3/api-docs/aiModelHubApis': 'aiModelHubApis.json'
+        ]
+        generator {
+            outputDir = file("$rootDir/ui/src/api/generated")
+        }
+    }
 }

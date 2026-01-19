@@ -2,10 +2,10 @@
 import { VCard, VPageHeader, VPagination, VSpace, VEmpty, VButton, VEntity, VEntityField, VStatusDot, Dialog, VLoading, Toast, VEntityContainer, VDropdownItem } from '@halo-dev/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import axios from 'axios'
 import RiRefreshLine from '~icons/ri/refresh-line'
 import RiRobot2Line from '~icons/ri/robot-2-line'
 import { utils } from '@halo-dev/ui-shared'
+import { aiModelHubApiClient } from '@/api'
 
 interface ListResult<T> {
   page: number
@@ -19,6 +19,8 @@ interface ListResult<T> {
   totalPages: number
 }
 
+type CallType = 'CHAT' | 'STREAM' | 'EMBEDDING'
+
 interface AiChatLog {
   metadata: {
     name: string
@@ -29,7 +31,7 @@ interface AiChatLog {
     provider: string
     model: string
     userMessage?: string
-    stream?: boolean
+    callType?: CallType
     requestTime: string
   }
   status?: {
@@ -66,16 +68,11 @@ const total = computed(() => logs.value?.total || 0)
 const fetchLogs = async () => {
   try {
     loading.value = true
-    const params: Record<string, any> = {
-      page: page.value,
-      size: size.value,
-    }
-
-    const { data } = await axios.get<ListResult<AiChatLog>>(
-      '/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs',
-      { params }
-    )
-    logs.value = data
+    const { data } = await aiModelHubApiClient.chatLogConsole.listAiChatLogs({
+      page: String(page.value),
+      size: String(size.value),
+    })
+    logs.value = data as unknown as ListResult<AiChatLog>
   } catch (error) {
     console.error('Failed to fetch logs:', error)
   } finally {
@@ -85,10 +82,8 @@ const fetchLogs = async () => {
 
 const fetchStats = async () => {
   try {
-    const { data } = await axios.get<Stats>(
-      '/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/stats'
-    )
-    stats.value = data
+    const { data } = await aiModelHubApiClient.chatLogConsole.getAiChatLogStats()
+    stats.value = data as unknown as Stats
   } catch (error) {
     console.error('Failed to fetch stats:', error)
   }
@@ -109,9 +104,9 @@ const handleDelete = async (log: AiChatLog) => {
     cancelText: '取消',
     onConfirm: async () => {
       try {
-        await axios.delete(
-          `/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/${log.metadata.name}`
-        )
+        await aiModelHubApiClient.chatLog.deleteAiChatLog({
+          name: log.metadata.name,
+        })
         Toast.success('删除成功')
         await handleRefresh()
       } catch (error) {
@@ -128,6 +123,20 @@ const formatDuration = (ms?: number) => {
   return `${(ms / 1000).toFixed(2)}s`
 }
 
+const getCallTypeLabel = (log: AiChatLog) => {
+  const callType = log.spec.callType
+  if (callType === 'STREAM') return '流式'
+  if (callType === 'EMBEDDING') return '嵌入'
+  return '非流'
+}
+
+const getCallTypeClass = (log: AiChatLog) => {
+  const callType = log.spec.callType
+  if (callType === 'STREAM') return 'bg-teal-100 text-teal-600'
+  if (callType === 'EMBEDDING') return 'bg-orange-100 text-orange-600'
+  return 'bg-purple-100 text-purple-600'
+}
+
 watch([page, size], () => {
   fetchLogs()
 })
@@ -141,7 +150,7 @@ onMounted(() => {
 <template>
   <VPageHeader title="AI 调用日志">
     <template #icon>
-      <RiRobot2Line class="mr-2 self-center" />
+      <RiRobot2Line class=":uno: mr-2 self-center" />
     </template>
     <template #actions>
       <VButton size="sm" @click="handleRefresh" :loading="refreshing">
@@ -153,40 +162,47 @@ onMounted(() => {
     </template>
   </VPageHeader>
 
-  <div class="m-0 md:m-4">
+  <div class=":uno: m-0 md:m-4">
     <!-- 统计卡片 -->
-    <div v-if="stats" class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div v-if="stats" class=":uno: mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <VCard :body-class="['!p-4']">
-        <div class="text-sm text-gray-500">总调用次数</div>
-        <div class="mt-1 text-2xl font-bold">{{ stats.totalCalls }}</div>
-        <div class="mt-2 text-xs text-gray-400">
-          成功: {{ stats.successCount }} / 失败: {{ stats.failCount }}
+        <div class=":uno: text-sm text-gray-500">总调用次数</div>
+        <div class=":uno: mt-1 text-2xl font-semibold text-gray-800">{{ stats.totalCalls }}</div>
+        <div class=":uno: mt-2 flex items-center gap-3 text-xs">
+          <VStatusDot state="success" :text="`${stats.successCount}`" :animate="false" />
+          <VStatusDot state="error" :text="`${stats.failCount}`" :animate="false" />
         </div>
       </VCard>
       <VCard :body-class="['!p-4']">
-        <div class="text-sm text-gray-500">总 Token 使用</div>
-        <div class="mt-1 text-2xl font-bold">{{ stats.totalTokens.toLocaleString() }}</div>
-        <div class="mt-2 text-xs text-gray-400">
-          输入: {{ stats.totalPromptTokens.toLocaleString() }} / 输出: {{ stats.totalCompletionTokens.toLocaleString() }}
+        <div class=":uno: text-sm text-gray-500">总 Token 使用</div>
+        <div class=":uno: mt-1 text-2xl font-semibold text-gray-800">{{ stats.totalTokens.toLocaleString() }}</div>
+        <div class=":uno: mt-2 text-xs text-gray-400">
+          输入 {{ stats.totalPromptTokens.toLocaleString() }} / 输出 {{ stats.totalCompletionTokens.toLocaleString() }}
         </div>
       </VCard>
       <VCard :body-class="['!p-4']">
-        <div class="text-sm text-gray-500">今日调用</div>
-        <div class="mt-1 text-2xl font-bold">{{ stats.todayCalls }}</div>
+        <div class=":uno: text-sm text-gray-500">今日调用</div>
+        <div class=":uno: mt-1 text-2xl font-semibold text-gray-800">{{ stats.todayCalls }}</div>
+        <div class=":uno: mt-2 text-xs text-gray-400">
+          占总调用 {{ stats.totalCalls ? ((stats.todayCalls / stats.totalCalls) * 100).toFixed(1) : 0 }}%
+        </div>
       </VCard>
       <VCard :body-class="['!p-4']">
-        <div class="text-sm text-gray-500">今日 Token</div>
-        <div class="mt-1 text-2xl font-bold">{{ stats.todayTokens.toLocaleString() }}</div>
+        <div class=":uno: text-sm text-gray-500">今日 Token</div>
+        <div class=":uno: mt-1 text-2xl font-semibold text-gray-800">{{ stats.todayTokens.toLocaleString() }}</div>
+        <div class=":uno: mt-2 text-xs text-gray-400">
+          占总量 {{ stats.totalTokens ? ((stats.todayTokens / stats.totalTokens) * 100).toFixed(1) : 0 }}%
+        </div>
       </VCard>
     </div>
 
     <!-- 日志列表 -->
     <VCard :body-class="['!p-0']">
       <template #header>
-        <div class="block w-full bg-gray-50 px-4 py-3">
-          <div class="relative flex flex-col items-start sm:flex-row sm:items-center">
-            <div class="flex w-full flex-1 sm:w-auto">
-              <span class="text-base font-medium">日志列表</span>
+        <div class=":uno: block w-full bg-gray-50 px-4 py-3">
+          <div class=":uno: relative flex flex-col items-start sm:flex-row sm:items-center">
+            <div class=":uno: flex w-full flex-1 sm:w-auto">
+              <span class=":uno: text-base font-medium">日志列表</span>
             </div>
           </div>
         </div>
@@ -212,15 +228,10 @@ onMounted(() => {
             />
           </template>
           <template #end>
-            <VEntityField v-if="log.spec.callerPlugin">
-              <template #description>
-                <span class="text-xs text-gray-500">{{ log.spec.callerPlugin }}</span>
-              </template>
-            </VEntityField>
             <VEntityField>
               <template #description>
-                <span class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                  {{ log.spec.stream ? '流式' : '普通' }}
+                <span :class="[':uno: rounded px-2 py-1 text-xs', getCallTypeClass(log)]">
+                  {{ getCallTypeLabel(log) }}
                 </span>
               </template>
             </VEntityField>
@@ -235,21 +246,21 @@ onMounted(() => {
             </VEntityField>
             <VEntityField v-if="log.status">
               <template #description>
-                <span class="text-xs text-gray-500">
+                <span class=":uno: text-xs text-gray-500">
                   {{ log.status.totalTokens }} tokens
                 </span>
               </template>
             </VEntityField>
             <VEntityField v-if="log.status">
               <template #description>
-                <span class="text-xs text-gray-500">
+                <span class=":uno: text-xs text-gray-500">
                   {{ formatDuration(log.status.durationMs) }}
                 </span>
               </template>
             </VEntityField>
             <VEntityField>
               <template #description>
-                <span class="truncate text-xs tabular-nums text-gray-500">
+                <span class=":uno: truncate text-xs tabular-nums text-gray-500">
                   {{ utils.date.format(log.spec.requestTime) }}
                 </span>
               </template>
