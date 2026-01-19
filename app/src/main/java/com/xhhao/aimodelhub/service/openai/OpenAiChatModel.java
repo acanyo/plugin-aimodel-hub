@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.xhhao.aimodelhub.api.ChatMessage;
 import com.xhhao.aimodelhub.api.ChatModel;
+import com.xhhao.aimodelhub.api.constant.AiModelConstants;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
@@ -20,33 +23,38 @@ import java.util.Map;
 
 /**
  * OpenAI Chat 模型客户端
+ * <p>
+ * 基于 WebClient 实现，支持流式和非流式响应
+ * </p>
+ *
+ * @author Handsome
+ * @since 1.0.0
  */
+@Slf4j
 @Getter
-@Builder
 public class OpenAiChatModel implements ChatModel {
 
-    // ===== 从插件配置获取 允许覆盖 =====
+    private static final String CHAT_COMPLETIONS_PATH = "/v1/chat/completions";
+    private static final String SSE_DONE_SIGNAL = "[DONE]";
+    private static final String AUTH_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+    private static final ParameterizedTypeReference<ServerSentEvent<String>> SSE_TYPE_REF =
+        new ParameterizedTypeReference<>() {};
+
     private final String apiKey;
     private final String modelName;
     private final String baseUrl;
-    
     private final Map<String, String> customHeaders;
     private final String organizationId;
     private final String projectId;
-    
-    @Builder.Default
-    private final Duration timeout = Duration.ofSeconds(120);
-    
-    @Builder.Default
-    private final Integer maxRetries = 3;
-    
-    @Builder.Default
-    private final Boolean logRequests = false;
-    
-    @Builder.Default
-    private final Boolean logResponses = false;
+    private final Duration timeout;
+    private final Integer maxRetries;
 
-    // ===== 请求默认参数 =====
     private final Double temperature;
     private final Double topP;
     private final Integer maxTokens;
@@ -56,35 +64,51 @@ public class OpenAiChatModel implements ChatModel {
     private final List<String> stop;
     private final Integer seed;
     private final String user;
-    private final String responseFormat;
     private final Map<String, Integer> logitBias;
-    private final Boolean logprobs;
-    private final Integer topLogprobs;
-    private final String reasoningEffort;
-    private final String serviceTier;
-    private final Boolean store;
-    private final Map<String, String> metadata;
-    private final Boolean parallelToolCalls;
-    private final Object toolChoice;
-    private final Boolean strictTools;
-    private final Boolean strictSchema;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
     /**
-     * 发送聊天请求
+     * 缓存的 WebClient 实例，避免每次请求都创建
+     */
+    private final WebClient webClient;
+
+    @Builder
+    public OpenAiChatModel(String apiKey, String modelName, String baseUrl,
+                           Map<String, String> customHeaders, String organizationId, String projectId,
+                           Duration timeout, Integer maxRetries,
+                           Double temperature, Double topP, Integer maxTokens, Integer maxCompletionTokens,
+                           Double frequencyPenalty, Double presencePenalty, List<String> stop,
+                           Integer seed, String user, Map<String, Integer> logitBias) {
+        this.apiKey = apiKey;
+        this.modelName = modelName;
+        this.baseUrl = baseUrl;
+        this.customHeaders = customHeaders;
+        this.organizationId = organizationId;
+        this.projectId = projectId;
+        this.timeout = timeout != null ? timeout : Duration.ofSeconds(AiModelConstants.DEFAULT_TIMEOUT_SECONDS);
+        this.maxRetries = maxRetries != null ? maxRetries : AiModelConstants.DEFAULT_MAX_RETRIES;
+        this.temperature = temperature;
+        this.topP = topP;
+        this.maxTokens = maxTokens;
+        this.maxCompletionTokens = maxCompletionTokens;
+        this.frequencyPenalty = frequencyPenalty;
+        this.presencePenalty = presencePenalty;
+        this.stop = stop;
+        this.seed = seed;
+        this.user = user;
+        this.logitBias = logitBias;
+        this.webClient = createWebClient();
+    }
+
+    /**
+     * 发送聊天请求（非流式）
+     *
+     * @param request 请求对象
+     * @return 响应对象
      */
     public Mono<OpenAiChatResponse> chat(OpenAiChatRequest request) {
-        if (request.getModel() == null) {
-            request.setModel(modelName);
-        }
-        applyDefaults(request);
-
-        return createWebClient()
-            .post()
-            .uri("/v1/chat/completions")
+        prepareRequest(request, false);
+        return webClient.post()
+            .uri(CHAT_COMPLETIONS_PATH)
             .bodyValue(request)
             .retrieve()
             .bodyToMono(OpenAiChatResponse.class);
@@ -92,97 +116,80 @@ public class OpenAiChatModel implements ChatModel {
 
     /**
      * 发送流式聊天请求
+     *
+     * @param request 请求对象
+     * @return 流式响应
      */
     public Flux<OpenAiChatResponse> chatStream(OpenAiChatRequest request) {
-        if (request.getModel() == null) {
-            request.setModel(modelName);
-        }
-        request.setStream(true);
-        applyDefaults(request);
-
-        ParameterizedTypeReference<ServerSentEvent<String>> typeRef =
-            new ParameterizedTypeReference<>() {};
-
-        return createWebClient()
-            .post()
-            .uri("/v1/chat/completions")
+        prepareRequest(request, true);
+        return webClient.post()
+            .uri(CHAT_COMPLETIONS_PATH)
             .accept(MediaType.TEXT_EVENT_STREAM)
             .bodyValue(request)
             .retrieve()
-            .bodyToFlux(typeRef)
-            .filter(sse -> sse.data() != null && !sse.data().equals("[DONE]"))
+            .bodyToFlux(SSE_TYPE_REF)
+            .filter(sse -> sse.data() != null && !SSE_DONE_SIGNAL.equals(sse.data()))
             .map(ServerSentEvent::data)
             .mapNotNull(this::parseResponse);
     }
 
-    /**
-     * 单轮对话
-     */
     @Override
     public Mono<String> chat(String userMessage) {
-        OpenAiChatRequest request = OpenAiChatRequest.builder()
-            .model(modelName)
-            .messages(List.of(OpenAiMessage.user(userMessage)))
-            .build();
-        return chat(request).map(OpenAiChatResponse::getContent);
+        return chat(List.of(ChatMessage.user(userMessage)));
     }
 
-    /**
-     * 单轮对话（流式）
-     */
     @Override
     public Flux<String> chatStream(String userMessage) {
-        OpenAiChatRequest request = OpenAiChatRequest.builder()
-            .model(modelName)
-            .messages(List.of(OpenAiMessage.user(userMessage)))
-            .stream(true)
-            .build();
-        return chatStream(request)
-            .filter(response -> response != null && response.getContent() != null && !response.getContent().isEmpty())
-            .map(OpenAiChatResponse::getContent);
+        return chatStream(List.of(ChatMessage.user(userMessage)));
     }
 
-    /**
-     * 多轮对话
-     */
     @Override
-    public Mono<String> chat(List<com.xhhao.aimodelhub.api.ChatMessage> messages) {
-        List<OpenAiMessage> openAiMessages = messages.stream()
-            .map(msg -> new OpenAiMessage(msg.getRole(), msg.getContent(), null, null, null))
-            .toList();
-
-        OpenAiChatRequest request = OpenAiChatRequest.builder()
-            .model(modelName)
-            .messages(openAiMessages)
-            .build();
-
+    public Mono<String> chat(List<ChatMessage> messages) {
+        OpenAiChatRequest request = buildRequest(messages);
         return chat(request).map(OpenAiChatResponse::getContent);
     }
 
-    /**
-     * 多轮对话（流式）
-     */
     @Override
-    public Flux<String> chatStream(List<com.xhhao.aimodelhub.api.ChatMessage> messages) {
-        List<OpenAiMessage> openAiMessages = messages.stream()
-            .map(msg -> new OpenAiMessage(msg.getRole(), msg.getContent(), null, null, null))
-            .toList();
-
-        OpenAiChatRequest request = OpenAiChatRequest.builder()
-            .model(modelName)
-            .messages(openAiMessages)
-            .stream(true)
-            .build();
-
+    public Flux<String> chatStream(List<ChatMessage> messages) {
+        OpenAiChatRequest request = buildRequest(messages);
         return chatStream(request)
-            .filter(response -> response != null && response.getContent() != null && !response.getContent().isEmpty())
+            .filter(response -> response.getContent() != null && !response.getContent().isEmpty())
             .map(OpenAiChatResponse::getContent);
     }
 
+    /**
+     * 构建请求对象
+     */
+    private OpenAiChatRequest buildRequest(List<ChatMessage> messages) {
+        List<OpenAiMessage> openAiMessages = messages.stream()
+            .map(msg -> new OpenAiMessage(msg.getRole(), msg.getContent(), null, null, null))
+            .toList();
+        return OpenAiChatRequest.builder()
+            .model(modelName)
+            .messages(openAiMessages)
+            .build();
+    }
+
+    /**
+     * 准备请求：设置默认值
+     */
+    private void prepareRequest(OpenAiChatRequest request, boolean stream) {
+        if (request.getModel() == null) {
+            request.setModel(modelName);
+        }
+        if (stream) {
+            request.setStream(true);
+        }
+        applyDefaults(request);
+    }
+
+    /**
+     * 创建 WebClient 实例
+     */
     private WebClient createWebClient() {
         WebClient.Builder builder = WebClient.builder()
             .baseUrl(baseUrl)
-            .defaultHeader("Authorization", "Bearer " + apiKey)
+            .defaultHeader(AUTH_HEADER, BEARER_PREFIX + apiKey)
             .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE);
 
         if (organizationId != null) {
@@ -198,43 +205,41 @@ public class OpenAiChatModel implements ChatModel {
         return builder.build();
     }
 
+    /**
+     * 应用默认参数
+     */
     private void applyDefaults(OpenAiChatRequest request) {
-        if (request.getTemperature() == null && temperature != null) {
-            request.setTemperature(temperature);
-        }
-        if (request.getTopP() == null && topP != null) {
-            request.setTopP(topP);
-        }
-        if (request.getMaxTokens() == null && maxTokens != null) {
-            request.setMaxTokens(maxTokens);
-        }
-        if (request.getMaxCompletionTokens() == null && maxCompletionTokens != null) {
-            request.setMaxCompletionTokens(maxCompletionTokens);
-        }
-        if (request.getFrequencyPenalty() == null && frequencyPenalty != null) {
-            request.setFrequencyPenalty(frequencyPenalty);
-        }
-        if (request.getPresencePenalty() == null && presencePenalty != null) {
-            request.setPresencePenalty(presencePenalty);
-        }
-        if (request.getStop() == null && stop != null) {
-            request.setStop(stop);
-        }
-        if (request.getSeed() == null && seed != null) {
-            request.setSeed(seed);
-        }
-        if (request.getUser() == null && user != null) {
-            request.setUser(user);
-        }
-        if (request.getLogitBias() == null && logitBias != null) {
-            request.setLogitBias(logitBias);
+        setIfNull(request::getTemperature, request::setTemperature, temperature);
+        setIfNull(request::getTopP, request::setTopP, topP);
+        setIfNull(request::getMaxTokens, request::setMaxTokens, maxTokens);
+        setIfNull(request::getMaxCompletionTokens, request::setMaxCompletionTokens, maxCompletionTokens);
+        setIfNull(request::getFrequencyPenalty, request::setFrequencyPenalty, frequencyPenalty);
+        setIfNull(request::getPresencePenalty, request::setPresencePenalty, presencePenalty);
+        setIfNull(request::getStop, request::setStop, stop);
+        setIfNull(request::getSeed, request::setSeed, seed);
+        setIfNull(request::getUser, request::setUser, user);
+        setIfNull(request::getLogitBias, request::setLogitBias, logitBias);
+    }
+
+    /**
+     * 如果请求值为 null 且默认值不为 null，则设置默认值
+     */
+    private <T> void setIfNull(java.util.function.Supplier<T> getter,
+                               java.util.function.Consumer<T> setter,
+                               T defaultValue) {
+        if (getter.get() == null && defaultValue != null) {
+            setter.accept(defaultValue);
         }
     }
 
+    /**
+     * 解析 SSE 响应 JSON
+     */
     private OpenAiChatResponse parseResponse(String json) {
         try {
             return MAPPER.readValue(json, OpenAiChatResponse.class);
         } catch (JsonProcessingException e) {
+            log.warn("解析 OpenAI 响应失败: {}", json, e);
             return null;
         }
     }

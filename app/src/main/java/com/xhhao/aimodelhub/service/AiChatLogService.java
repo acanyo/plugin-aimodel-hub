@@ -1,19 +1,19 @@
 package com.xhhao.aimodelhub.service;
 
+import com.xhhao.aimodelhub.api.constant.AiModelConstants;
 import com.xhhao.aimodelhub.extension.AiChatLog;
 import com.xhhao.aimodelhub.query.AiChatLogQuery;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
-import run.halo.app.extension.ReactiveExtensionClient;
-
-import org.springframework.data.domain.Sort;
 import run.halo.app.extension.PageRequestImpl;
+import run.halo.app.extension.ReactiveExtensionClient;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,13 +23,20 @@ import java.util.UUID;
 
 /**
  * AI 聊天日志服务
+ * <p>
+ * 负责记录和查询 AI 调用日志
+ * </p>
  *
  * @author Handsome
+ * @since 1.0.0
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiChatLogService {
+
+    private static final String LOG_NAME_PREFIX = "chatlog-";
+    private static final int LOG_NAME_SUFFIX_LENGTH = 8;
 
     private final ReactiveExtensionClient client;
 
@@ -45,7 +52,7 @@ public class AiChatLogService {
         
         // 设置 metadata
         Metadata metadata = new Metadata();
-        metadata.setName("chatlog-" + UUID.randomUUID().toString().substring(0, 8));
+        metadata.setName(LOG_NAME_PREFIX + UUID.randomUUID().toString().substring(0, LOG_NAME_SUFFIX_LENGTH));
         chatLog.setMetadata(metadata);
         
         // 设置 spec
@@ -53,7 +60,7 @@ public class AiChatLogService {
         spec.setCallerPlugin(callerPlugin);
         spec.setProvider(provider);
         spec.setModel(model);
-        spec.setUserMessage(truncate(userMessage, 500));
+        spec.setUserMessage(truncate(userMessage, AiModelConstants.USER_MESSAGE_MAX_LENGTH));
         spec.setCallType(callType);
         spec.setRequestTime(Instant.ofEpochMilli(startTime));
         chatLog.setSpec(spec);
@@ -67,7 +74,7 @@ public class AiChatLogService {
         status.setDurationMs(System.currentTimeMillis() - startTime);
         status.setSuccess(success);
         status.setErrorMessage(errorMessage);
-        status.setResponseSummary(truncate(response, 200));
+        status.setResponseSummary(truncate(response, AiModelConstants.RESPONSE_SUMMARY_MAX_LENGTH));
         chatLog.setStatus(status);
         
         return client.create(chatLog)

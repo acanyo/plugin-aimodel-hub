@@ -85,3 +85,5 @@ application-local.properties
 /workplace/
 /src/main/resources/console/
 **/workplace/
+/.ai-dev-rules/
+/docs/

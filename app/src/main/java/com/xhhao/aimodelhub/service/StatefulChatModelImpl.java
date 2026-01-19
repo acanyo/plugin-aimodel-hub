@@ -2,21 +2,24 @@ package com.xhhao.aimodelhub.service;
 
 import com.xhhao.aimodelhub.api.ChatMessage;
 import com.xhhao.aimodelhub.api.ChatModel;
+import com.xhhao.aimodelhub.api.constant.AiModelConstants;
 import lombok.Getter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * 有状态聊天模型实现（自动管理对话历史）
  * <p>
- * 类似 LangChain4j 的 ChatMemory
+ * 类似 LangChain4j 的 ChatMemory，自动维护对话上下文
  * </p>
  *
  * @author Handsome
+ * @since 1.0.0
  */
 public class StatefulChatModelImpl implements ChatModel {
 
@@ -26,14 +29,14 @@ public class StatefulChatModelImpl implements ChatModel {
     private final String systemPrompt;
 
     /**
-     * 对话历史（不含 system 消息）
+     * 对话历史（不含 system 消息），使用 LinkedList 便于头部删除
      */
-    private final List<ChatMessage> history = new ArrayList<>();
+    private final LinkedList<ChatMessage> history = new LinkedList<>();
 
     /**
-     * 最大历史消息数（默认 20 条，防止内存溢出和 token 超限）
+     * 最大历史消息数
      */
-    private int maxHistory = 20;
+    private int maxHistory;
 
     /**
      * 最后活跃时间
@@ -42,14 +45,13 @@ public class StatefulChatModelImpl implements ChatModel {
     private Instant lastActiveTime = Instant.now();
 
     public StatefulChatModelImpl(ChatModel delegate, String systemPrompt) {
-        this.delegate = delegate;
-        this.systemPrompt = systemPrompt;
+        this(delegate, systemPrompt, AiModelConstants.DEFAULT_MAX_HISTORY);
     }
 
     public StatefulChatModelImpl(ChatModel delegate, String systemPrompt, int maxHistory) {
         this.delegate = delegate;
         this.systemPrompt = systemPrompt;
-        this.maxHistory = maxHistory;
+        this.maxHistory = maxHistory > 0 ? maxHistory : AiModelConstants.DEFAULT_MAX_HISTORY;
     }
 
     /**
@@ -166,14 +168,13 @@ public class StatefulChatModelImpl implements ChatModel {
 
     /**
      * 清理超出限制的历史消息
+     * <p>
+     * 使用 LinkedList.removeFirst() 效率更高
+     * </p>
      */
     private void trimHistory() {
-        if (maxHistory > 0 && history.size() > maxHistory) {
-            // 保留最近的 maxHistory 条消息
-            int removeCount = history.size() - maxHistory;
-            for (int i = 0; i < removeCount; i++) {
-                history.remove(0);
-            }
+        while (history.size() > maxHistory) {
+            history.removeFirst();
         }
     }
 }
