@@ -29,6 +29,13 @@ public class SettingConfigGetter {
         return settingFetcher.fetch("image", ImageModelConfig.class);
     }
 
+    /**
+     * 获取安全配置
+     */
+    public Mono<SecurityConfig> getSecurityConfig() {
+        return settingFetcher.fetch("security", SecurityConfig.class);
+    }
+
     @Data
     public static class TextModelConfig {
         private OpenAiConfig openai;
@@ -82,5 +89,17 @@ public class SettingConfigGetter {
         private String apiKey;
         private String model;
         private String size;
+    }
+
+    @Data
+    public static class SecurityConfig {
+        private RateLimitConfig rateLimit;
+    }
+
+    @Data
+    public static class RateLimitConfig {
+        private Boolean enabled;
+        private Integer maxRequestsPerMinute;
+        private Integer maxRequestsPerDay;
     }
 }

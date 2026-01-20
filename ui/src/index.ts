@@ -24,6 +24,7 @@ export default definePlugin({
             meta: {
               title: '调用日志',
               searchable: true,
+              permissions: ['plugin:aimodel-hub:view'],
               menu: {
                 name: '调用日志',
                 icon: markRaw(RiFileListLine),
@@ -38,6 +39,7 @@ export default definePlugin({
             meta: {
               title: '调用测试',
               searchable: true,
+              permissions: ['plugin:aimodel-hub:manage'],
               menu: {
                 name: '调用测试',
                 icon: markRaw(RiTestTubeLine),
@@ -49,6 +51,7 @@ export default definePlugin({
         meta: {
           title: 'AI 模型聚合',
           searchable: true,
+          permissions: ['plugin:aimodel-hub:view'],
           menu: {
             name: 'AI 模型聚合',
             group: 'system',

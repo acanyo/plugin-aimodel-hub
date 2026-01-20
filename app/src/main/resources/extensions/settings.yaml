@@ -409,3 +409,33 @@ spec:
                   value: 768x1024
                 - label: 1024×768
                   value: 1024x768
+
+    - group: security
+      label: 安全设置
+      formSchema:
+        - $formkit: group
+          name: rateLimit
+          label: 限流配置
+          help: "防止恶意刷接口，保护 API 资源"
+          children:
+            - $formkit: checkbox
+              name: enabled
+              label: 启用限流
+              help: "开启后将限制 API 调用频率"
+              value: false
+
+            - $formkit: number
+              name: maxRequestsPerMinute
+              label: 每分钟最大请求数
+              help: "单个 IP 每分钟允许的最大请求数量"
+              value: 60
+              min: 1
+              max: 1000
+
+            - $formkit: number
+              name: maxRequestsPerDay
+              label: 每日最大请求数
+              help: "单个 IP 每天允许的最大请求数量"
+              value: 1000
+              min: 1
+              max: 100000

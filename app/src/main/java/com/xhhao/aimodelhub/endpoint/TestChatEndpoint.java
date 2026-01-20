@@ -2,9 +2,11 @@ package com.xhhao.aimodelhub.endpoint;
 
 import com.xhhao.aimodelhub.api.ChatModel;
 import com.xhhao.aimodelhub.api.ChatModelFactory;
+import com.xhhao.aimodelhub.service.common.RateLimiterService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -13,6 +15,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
+
+import java.util.Map;
 
 /**
  * 测试聊天端点
@@ -27,6 +31,7 @@ import run.halo.app.extension.GroupVersion;
 public class TestChatEndpoint implements CustomEndpoint {
 
     private final ChatModelFactory chatModelFactory;
+    private final RateLimiterService rateLimiterService;
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
@@ -47,6 +52,13 @@ public class TestChatEndpoint implements CustomEndpoint {
      * 测试简单对话
      */
     private Mono<ServerResponse> testSimpleChat(ServerRequest request) {
+        // 限流检查
+        String clientIp = getClientIp(request);
+        if (!rateLimiterService.allowRequestByIp(clientIp)) {
+            return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS)
+                .bodyValue(Map.of("success", false, "message", "请求过于频繁，请稍后再试"));
+        }
+
         return request.bodyToMono(TestChatRequest.class)
             .flatMap(req -> {
                 // 根据供应商获取模型（响应式）
@@ -85,6 +97,13 @@ public class TestChatEndpoint implements CustomEndpoint {
      * 测试流式对话
      */
     private Mono<ServerResponse> testStreamChat(ServerRequest request) {
+        // 限流检查
+        String clientIp = getClientIp(request);
+        if (!rateLimiterService.allowRequestByIp(clientIp)) {
+            return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS)
+                .bodyValue(Map.of("success", false, "message", "请求过于频繁，请稍后再试"));
+        }
+
         return request.bodyToMono(TestChatRequest.class)
             .flatMap(req -> 
                 // 根据供应商获取模型（响应式）
@@ -116,6 +135,23 @@ public class TestChatEndpoint implements CustomEndpoint {
             case "zhipu" -> chatModelFactory.zhipu();
             default -> Mono.error(new IllegalArgumentException("不支持的供应商: " + actualProvider));
         };
+    }
+
+    /**
+     * 获取客户端真实 IP
+     */
+    private String getClientIp(ServerRequest request) {
+        String xff = request.headers().firstHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].trim();
+        }
+        String realIp = request.headers().firstHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp;
+        }
+        return request.remoteAddress()
+            .map(addr -> addr.getAddress().getHostAddress())
+            .orElse("unknown");
     }
 
     @Override

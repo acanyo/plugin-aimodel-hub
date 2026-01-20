@@ -1,0 +1,50 @@
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: aimodel-hub-role-view
+  labels:
+    halo.run/role-template: "true"
+  annotations:
+    rbac.authorization.halo.run/module: "AI 模型聚合"
+    rbac.authorization.halo.run/display-name: "AI 模型查看"
+    rbac.authorization.halo.run/ui-permissions: |
+      ["plugin:aimodel-hub:view"]
+rules:
+  - apiGroups: ["console.api.aimodel-hub.xhhao.com"]
+    resources: ["aimodel-hub/models"]
+    verbs: ["get", "list"]
+  - apiGroups: ["console.api.aimodel-hub.xhhao.com"]
+    resources: ["aimodel-hub/aichatlogs"]
+    verbs: ["get", "list"]
+  - nonResourceURLs: ["/apis/console.api.aimodel-hub.xhhao.com/*"]
+    verbs: ["get"]
+
+---
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: aimodel-hub-role-manage
+  labels:
+    halo.run/role-template: "true"
+  annotations:
+    rbac.authorization.halo.run/module: "AI 模型聚合"
+    rbac.authorization.halo.run/display-name: "AI 模型管理"
+    rbac.authorization.halo.run/dependencies: |
+      ["aimodel-hub-role-view"]
+    rbac.authorization.halo.run/ui-permissions: |
+      ["plugin:aimodel-hub:manage"]
+rules:
+  - apiGroups: ["console.api.aimodel-hub.xhhao.com"]
+    resources: ["aimodel-hub/models"]
+    verbs: ["*"]
+  - apiGroups: ["console.api.aimodel-hub.xhhao.com"]
+    resources: ["aimodel-hub/aichatlogs"]
+    verbs: ["*"]
+  - apiGroups: ["console.api.aimodel-hub.xhhao.com"]
+    resources: ["aimodel-hub/testchat"]
+    verbs: ["*"]
+  - apiGroups: ["console.api.aimodel-hub.xhhao.com"]
+    resources: ["aimodel-hub/images"]
+    verbs: ["*"]
+  - nonResourceURLs: ["/apis/console.api.aimodel-hub.xhhao.com/*"]
+    verbs: ["*"]

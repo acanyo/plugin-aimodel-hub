@@ -204,12 +204,14 @@ onMounted(() => {
     </template>
     <template #actions>
       <VSpace>
-        <VButton size="sm" type="danger" @click="handleClearLogs">
-          <template #icon>
-            <RiDeleteBin6Line />
-          </template>
-          清空日志
-        </VButton>
+        <HasPermission :permissions="['plugin:aimodel-hub:manage']">
+          <VButton size="sm" type="danger" @click="handleClearLogs">
+            <template #icon>
+              <RiDeleteBin6Line />
+            </template>
+            清空日志
+          </VButton>
+        </HasPermission>
         <VButton size="sm" @click="handleRefresh" :loading="refreshing">
           <template #icon>
             <RiRefreshLine />
@@ -334,9 +336,11 @@ onMounted(() => {
             <VDropdownItem @click="handleViewResponse(log)">
               查看返回日志
             </VDropdownItem>
-            <VDropdownItem type="danger" @click="handleDelete(log)">
-              删除
-            </VDropdownItem>
+            <HasPermission :permissions="['plugin:aimodel-hub:manage']">
+              <VDropdownItem type="danger" @click="handleDelete(log)">
+                删除
+              </VDropdownItem>
+            </HasPermission>
           </template>
         </VEntity>
       </VEntityContainer>
