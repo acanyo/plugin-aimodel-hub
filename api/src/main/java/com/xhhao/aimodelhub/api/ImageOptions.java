@@ -3,8 +3,11 @@ package com.xhhao.aimodelhub.api;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.Duration;
+import java.util.Map;
+
 /**
- * 图像生成选项
+ * 图像生成选项（统一配置，按需设置）
  *
  * @author Handsome
  * @since 1.0.0
@@ -13,38 +16,48 @@ import lombok.Data;
 @Builder
 public class ImageOptions {
 
-    /**
-     * 图像尺寸，如 1024x1024, 1024x1792, 1792x1024
-     */
-    private String size;
+    // ==================== 基础参数 ====================
 
-    /**
-     * 图像质量：standard 或 hd (仅 DALL-E 3)
-     */
+    private String apiKey;              // API Key（使用自定义 Key 时必填）
+    private String model;               // 模型名称
+    private String baseUrl;             // API 地址
+
+    // ==================== 生成参数 ====================
+
+    private String size;                // 尺寸: 1024x1024, 1024x1792 等
     @Builder.Default
-    private String quality = "standard";
-
-    /**
-     * 生成数量 (DALL-E 3 只支持 1)
-     */
+    private String quality = "standard";// 质量: standard/hd (DALL-E 3)
     @Builder.Default
-    private int n = 1;
-
-    /**
-     * 图像风格：vivid 或 natural (仅 DALL-E 3)
-     */
-    private String style;
-
-    /**
-     * 是否添加水印（部分供应商支持）
-     */
+    private int n = 1;                  // 生成数量
+    private String style;               // 风格: vivid/natural (DALL-E 3)
     @Builder.Default
-    private boolean watermark = false;
+    private boolean watermark = false;  // 是否加水印
 
-    /**
-     * 默认选项
-     */
+    // ==================== 网络参数 ====================
+
+    private Duration timeout;           // 超时时间
+    private Integer maxRetries;         // 最大重试次数
+    private Map<String, String> customHeaders; // 自定义请求头
+
+    // ==================== 硅基流动特有 ====================
+
+    private Integer steps;              // 采样步数
+    private Integer guidanceScale;      // 引导系数
+    private Long seed;                  // 随机种子
+    private String negativePrompt;      // 负面提示词
+    private String imageFormat;         // 输出格式: png/jpeg
+
+    // ==================== 工厂方法 ====================
+
     public static ImageOptions defaults() {
         return ImageOptions.builder().build();
+    }
+
+    public static ImageOptions of(String apiKey, String model) {
+        return ImageOptions.builder().apiKey(apiKey).model(model).build();
+    }
+
+    public static ImageOptions of(String apiKey, String model, String size) {
+        return ImageOptions.builder().apiKey(apiKey).model(model).size(size).build();
     }
 }

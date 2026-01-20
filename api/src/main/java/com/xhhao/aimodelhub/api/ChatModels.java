@@ -79,6 +79,66 @@ public final class ChatModels {
     }
 
     /**
+     * 发送消息（自定义 apiKey 和 model）
+     */
+    public static Mono<String> chat(Provider provider, String apiKey, String model, String message) {
+        return getModel(provider, apiKey, model).flatMap(m -> m.chat(message));
+    }
+
+    /**
+     * 流式发送消息（自定义 apiKey 和 model）
+     */
+    public static Flux<String> chatStream(Provider provider, String apiKey, String model, String message) {
+        return getModel(provider, apiKey, model).flatMapMany(m -> m.chatStream(message));
+    }
+
+    /**
+     * 发送消息（使用完整配置）
+     *
+     * <pre>{@code
+     * ChatOptions options = ChatOptions.builder()
+     *     .apiKey("sk-xxx")
+     *     .model("gpt-4o")
+     *     .temperature(0.7)
+     *     .maxTokens(2048)
+     *     .build();
+     * ChatModels.chat(Provider.OPENAI, options, "你好");
+     * }</pre>
+     */
+    public static Mono<String> chat(Provider provider, ChatOptions options, String message) {
+        checkInitialized();
+        return factory.create(provider.name().toLowerCase(), options)
+            .flatMap(m -> m.chat(message));
+    }
+
+    /**
+     * 流式发送消息（使用完整配置）
+     */
+    public static Flux<String> chatStream(Provider provider, ChatOptions options, String message) {
+        checkInitialized();
+        return factory.create(provider.name().toLowerCase(), options)
+            .flatMapMany(m -> m.chatStream(message));
+    }
+
+    /**
+     * 多轮对话（使用完整配置）
+     */
+    public static Mono<String> chat(Provider provider, ChatOptions options, List<ChatMessage> messages) {
+        checkInitialized();
+        return factory.create(provider.name().toLowerCase(), options)
+            .flatMap(m -> m.chat(messages));
+    }
+
+    /**
+     * 多轮对话流式（使用完整配置）
+     */
+    public static Flux<String> chatStream(Provider provider, ChatOptions options, List<ChatMessage> messages) {
+        checkInitialized();
+        return factory.create(provider.name().toLowerCase(), options)
+            .flatMapMany(m -> m.chatStream(messages));
+    }
+
+    /**
      * 多轮对话（使用默认供应商）
      */
     public static Mono<String> chat(List<ChatMessage> messages) {
@@ -151,6 +211,15 @@ public final class ChatModels {
             case OPENAI -> factory.openai();
             case SILICONFLOW -> factory.siliconflow();
             case ZHIPU -> factory.zhipu();
+        };
+    }
+
+    private static Mono<ChatModel> getModel(Provider provider, String apiKey, String model) {
+        checkInitialized();
+        return switch (provider) {
+            case OPENAI -> factory.openai(apiKey, model);
+            case SILICONFLOW -> factory.siliconflow(apiKey, model);
+            case ZHIPU -> factory.zhipu(apiKey, model);
         };
     }
 

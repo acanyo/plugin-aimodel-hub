@@ -33,4 +33,28 @@ public interface ChatModelFactory {
      * @return 带有记忆的 ChatModel
      */
     Mono<ChatModel> withMemory(String provider, String systemPrompt);
+
+    /**
+     * 获取 OpenAI 模型（使用自定义 apiKey 和 model）
+     */
+    Mono<ChatModel> openai(String apiKey, String model);
+
+    /**
+     * 获取硅基流动模型（使用自定义 apiKey 和 model）
+     */
+    Mono<ChatModel> siliconflow(String apiKey, String model);
+
+    /**
+     * 获取智谱AI模型（使用自定义 apiKey 和 model）
+     */
+    Mono<ChatModel> zhipu(String apiKey, String model);
+
+    /**
+     * 使用完整配置创建模型
+     *
+     * @param provider 供应商名称（openai/siliconflow/zhipu）
+     * @param options  调用参数
+     * @return ChatModel
+     */
+    Mono<ChatModel> create(String provider, ChatOptions options);
 }

@@ -24,4 +24,24 @@ public interface ImageModelFactory {
      * 获取硅基流动图像模型 (FLUX/SD)
      */
     Mono<ImageModel> siliconflow();
+
+    /**
+     * 获取 OpenAI 图像模型（自定义 apiKey 和 model）
+     */
+    Mono<ImageModel> openai(String apiKey, String model);
+
+    /**
+     * 获取智谱图像模型（自定义 apiKey 和 model）
+     */
+    Mono<ImageModel> zhipu(String apiKey, String model);
+
+    /**
+     * 获取硅基流动图像模型（自定义 apiKey 和 model）
+     */
+    Mono<ImageModel> siliconflow(String apiKey, String model);
+
+    /**
+     * 使用完整配置创建图像模型
+     */
+    Mono<ImageModel> create(String provider, ImageOptions options);
 }

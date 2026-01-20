@@ -50,11 +50,10 @@ public class OpenAiCompatibleChatModel implements ChatModel {
     private final String modelName;
     private final String baseUrl;
     private final Map<String, String> customHeaders;
-    private final String organizationId;
-    private final String projectId;
     private final Duration timeout;
     private final Integer maxRetries;
 
+    // 生成参数
     private final Double temperature;
     private final Double topP;
     private final Integer maxTokens;
@@ -67,6 +66,23 @@ public class OpenAiCompatibleChatModel implements ChatModel {
     private final Map<String, Integer> logitBias;
     private final String chatCompletionsPath;
 
+    // OpenAI 特有
+    private final String organizationId;
+    private final String projectId;
+
+    // 硅基流动特有
+    private final Boolean enableThinking;
+    private final Integer thinkingBudget;
+    private final Double minP;
+    private final Integer topK;
+    private final Double repetitionPenalty;
+    private final Integer n;
+
+    // 智谱特有
+    private final String requestId;
+    private final Boolean webSearch;
+    private final String toolChoice;
+
     /**
      * 缓存的 WebClient 实例
      */
@@ -74,21 +90,26 @@ public class OpenAiCompatibleChatModel implements ChatModel {
 
     @Builder
     public OpenAiCompatibleChatModel(String apiKey, String modelName, String baseUrl,
-                                     Map<String, String> customHeaders, String organizationId, String projectId,
-                                     Duration timeout, Integer maxRetries,
+                                     Map<String, String> customHeaders, Duration timeout, Integer maxRetries,
                                      Double temperature, Double topP, Integer maxTokens, Integer maxCompletionTokens,
                                      Double frequencyPenalty, Double presencePenalty, List<String> stop,
                                      Integer seed, String user, Map<String, Integer> logitBias,
-                                     String chatCompletionsPath) {
+                                     String chatCompletionsPath,
+                                     // OpenAI
+                                     String organizationId, String projectId,
+                                     // 硅基流动
+                                     Boolean enableThinking, Integer thinkingBudget, Double minP,
+                                     Integer topK, Double repetitionPenalty, Integer n,
+                                     // 智谱
+                                     String requestId, Boolean webSearch, String toolChoice) {
         this.apiKey = apiKey;
         this.modelName = modelName;
         this.baseUrl = baseUrl;
         this.chatCompletionsPath = chatCompletionsPath != null ? chatCompletionsPath : DEFAULT_CHAT_COMPLETIONS_PATH;
         this.customHeaders = customHeaders;
-        this.organizationId = organizationId;
-        this.projectId = projectId;
         this.timeout = timeout != null ? timeout : Duration.ofSeconds(AiModelConstants.DEFAULT_TIMEOUT_SECONDS);
         this.maxRetries = maxRetries != null ? maxRetries : AiModelConstants.DEFAULT_MAX_RETRIES;
+        // 生成参数
         this.temperature = temperature;
         this.topP = topP;
         this.maxTokens = maxTokens;
@@ -99,6 +120,20 @@ public class OpenAiCompatibleChatModel implements ChatModel {
         this.seed = seed;
         this.user = user;
         this.logitBias = logitBias;
+        // OpenAI
+        this.organizationId = organizationId;
+        this.projectId = projectId;
+        // 硅基流动
+        this.enableThinking = enableThinking;
+        this.thinkingBudget = thinkingBudget;
+        this.minP = minP;
+        this.topK = topK;
+        this.repetitionPenalty = repetitionPenalty;
+        this.n = n;
+        // 智谱
+        this.requestId = requestId;
+        this.webSearch = webSearch;
+        this.toolChoice = toolChoice;
         this.webClient = createWebClient();
     }
 
@@ -206,6 +241,7 @@ public class OpenAiCompatibleChatModel implements ChatModel {
      * 应用默认参数
      */
     private void applyDefaults(OpenAiChatRequest request) {
+        // 通用生成参数
         setIfNull(request::getTemperature, request::setTemperature, temperature);
         setIfNull(request::getTopP, request::setTopP, topP);
         setIfNull(request::getMaxTokens, request::setMaxTokens, maxTokens);
@@ -216,6 +252,17 @@ public class OpenAiCompatibleChatModel implements ChatModel {
         setIfNull(request::getSeed, request::setSeed, seed);
         setIfNull(request::getUser, request::setUser, user);
         setIfNull(request::getLogitBias, request::setLogitBias, logitBias);
+        setIfNull(request::getN, request::setN, n);
+        setIfNull(request::getToolChoice, request::setToolChoice, toolChoice);
+        // 硅基流动
+        setIfNull(request::getEnableThinking, request::setEnableThinking, enableThinking);
+        setIfNull(request::getThinkingBudget, request::setThinkingBudget, thinkingBudget);
+        setIfNull(request::getMinP, request::setMinP, minP);
+        setIfNull(request::getTopK, request::setTopK, topK);
+        setIfNull(request::getRepetitionPenalty, request::setRepetitionPenalty, repetitionPenalty);
+        // 智谱
+        setIfNull(request::getRequestId, request::setRequestId, requestId);
+        setIfNull(request::getWebSearch, request::setWebSearch, webSearch);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.xhhao.aimodelhub.service;
 
 import com.xhhao.aimodelhub.api.ChatModel;
 import com.xhhao.aimodelhub.api.ChatModelFactory;
+import com.xhhao.aimodelhub.api.ChatOptions;
 import com.xhhao.aimodelhub.api.constant.AiModelConstants;
 import com.xhhao.aimodelhub.api.exception.AiModelException;
 import com.xhhao.aimodelhub.config.SettingConfigGetter;
@@ -119,5 +120,130 @@ public class ChatModelFactoryImpl implements ChatModelFactory {
             default -> Mono.error(new IllegalArgumentException("不支持的供应商: " + provider));
         };
         return delegateMono.map(delegate -> new StatefulChatModelImpl(delegate, systemPrompt));
+    }
+
+    @Override
+    public Mono<ChatModel> openai(String apiKey, String model) {
+        return configGetter.getTextModelConfig()
+            .flatMap(config -> {
+                String baseUrl = config.getOpenai() != null ? config.getOpenai().getBaseUrl() : null;
+                String actualModel = model != null ? model : AiModelConstants.DEFAULT_OPENAI_MODEL;
+                OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+                    .apiKey(apiKey)
+                    .baseUrl(baseUrl)
+                    .modelName(actualModel)
+                    .build();
+                return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.OPENAI));
+            });
+    }
+
+    @Override
+    public Mono<ChatModel> siliconflow(String apiKey, String model) {
+        String actualModel = model != null ? model : AiModelConstants.DEFAULT_SILICONFLOW_MODEL;
+        OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+            .apiKey(apiKey)
+            .baseUrl(AiModelConstants.SILICONFLOW_BASE_URL)
+            .modelName(actualModel)
+            .build();
+        return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.SILICONFLOW));
+    }
+
+    @Override
+    public Mono<ChatModel> zhipu(String apiKey, String model) {
+        String actualModel = model != null ? model : "glm-4-flash";
+        OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+            .apiKey(apiKey)
+            .baseUrl("https://open.bigmodel.cn/api/paas/v4")
+            .modelName(actualModel)
+            .chatCompletionsPath("/chat/completions")
+            .build();
+        return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.ZHIPU));
+    }
+
+    @Override
+    public Mono<ChatModel> create(String provider, ChatOptions options) {
+        if (options == null || options.getApiKey() == null) {
+            return Mono.error(AiModelException.configError("apiKey 不能为空"));
+        }
+
+        String actualProvider = provider != null ? provider.toLowerCase() : "openai";
+
+        return configGetter.getTextModelConfig()
+            .flatMap(config -> {
+                // 解析供应商默认配置
+                ProviderDefaults defaults = getProviderDefaults(actualProvider, config);
+                if (defaults == null) {
+                    return Mono.error(new IllegalArgumentException("不支持的供应商: " + actualProvider));
+                }
+
+                // 构建模型（优先使用 options，否则用默认值）
+                OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+                    .apiKey(options.getApiKey())
+                    .baseUrl(firstNonNull(options.getBaseUrl(), defaults.baseUrl))
+                    .modelName(firstNonNull(options.getModel(), defaults.model))
+                    .chatCompletionsPath(defaults.chatCompletionsPath)
+                    // 生成参数
+                    .temperature(options.getTemperature())
+                    .topP(options.getTopP())
+                    .maxTokens(options.getMaxTokens())
+                    .maxCompletionTokens(options.getMaxCompletionTokens())
+                    .frequencyPenalty(options.getFrequencyPenalty())
+                    .presencePenalty(options.getPresencePenalty())
+                    .stop(options.getStop())
+                    .seed(options.getSeed())
+                    .user(options.getUser())
+                    .logitBias(options.getLogitBias())
+                    // 网络参数
+                    .timeout(options.getTimeout())
+                    .maxRetries(options.getMaxRetries())
+                    .customHeaders(options.getCustomHeaders())
+                    // OpenAI
+                    .organizationId(options.getOrganizationId())
+                    .projectId(options.getProjectId())
+                    // 硅基流动
+                    .enableThinking(options.getEnableThinking())
+                    .thinkingBudget(options.getThinkingBudget())
+                    .minP(options.getMinP())
+                    .topK(options.getTopK())
+                    .repetitionPenalty(options.getRepetitionPenalty())
+                    .n(options.getN())
+                    // 智谱
+                    .requestId(options.getRequestId())
+                    .webSearch(options.getWebSearch())
+                    .toolChoice(options.getToolChoice())
+                    .build();
+
+                return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, actualProvider));
+            });
+    }
+
+    /**
+     * 获取供应商默认配置
+     */
+    private ProviderDefaults getProviderDefaults(String provider, SettingConfigGetter.TextModelConfig config) {
+        return switch (provider) {
+            case "openai" -> new ProviderDefaults(
+                config.getOpenai() != null ? config.getOpenai().getBaseUrl() : null,
+                AiModelConstants.DEFAULT_OPENAI_MODEL,
+                null
+            );
+            case "siliconflow" -> new ProviderDefaults(
+                AiModelConstants.SILICONFLOW_BASE_URL,
+                AiModelConstants.DEFAULT_SILICONFLOW_MODEL,
+                null
+            );
+            case "zhipu" -> new ProviderDefaults(
+                "https://open.bigmodel.cn/api/paas/v4",
+                "glm-4-flash",
+                "/chat/completions"
+            );
+            default -> null;
+        };
+    }
+
+    private record ProviderDefaults(String baseUrl, String model, String chatCompletionsPath) {}
+
+    private static <T> T firstNonNull(T first, T second) {
+        return first != null ? first : second;
     }
 }

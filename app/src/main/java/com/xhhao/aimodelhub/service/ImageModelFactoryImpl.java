@@ -75,6 +75,166 @@ public class ImageModelFactoryImpl implements ImageModelFactory {
             });
     }
 
+    @Override
+    public Mono<ImageModel> openai(String apiKey, String model) {
+        return create("openai", ImageOptions.builder().apiKey(apiKey).model(model).build());
+    }
+
+    @Override
+    public Mono<ImageModel> zhipu(String apiKey, String model) {
+        return create("zhipu", ImageOptions.builder().apiKey(apiKey).model(model).build());
+    }
+
+    @Override
+    public Mono<ImageModel> siliconflow(String apiKey, String model) {
+        return create("siliconflow", ImageOptions.builder().apiKey(apiKey).model(model).build());
+    }
+
+    @Override
+    public Mono<ImageModel> create(String provider, ImageOptions options) {
+        if (options.getApiKey() == null || options.getApiKey().isBlank()) {
+            throw new ServerWebInputException("apiKey 不能为空");
+        }
+        String actualProvider = provider != null ? provider.toLowerCase() : "openai";
+        String apiKey = options.getApiKey();
+        String model = options.getModel();
+
+        return switch (actualProvider) {
+            case "openai" -> {
+                String actualModel = model != null ? model : "dall-e-3";
+                ImageModel imageModel = new CustomOpenAiImageModel(apiKey, options.getBaseUrl(), actualModel, webClient);
+                yield Mono.just(new LoggingImageModel(imageModel, logService, "openai", actualModel));
+            }
+            case "zhipu" -> {
+                String actualModel = model != null ? model : "cogview-3-flash";
+                ImageModel imageModel = new CustomZhipuImageModel(apiKey, actualModel, webClient);
+                yield Mono.just(new LoggingImageModel(imageModel, logService, "zhipu", actualModel));
+            }
+            case "siliconflow" -> {
+                String actualModel = model != null ? model : "black-forest-labs/FLUX.1-schnell";
+                ImageModel imageModel = new CustomSiliconFlowImageModel(apiKey, actualModel, options, webClient);
+                yield Mono.just(new LoggingImageModel(imageModel, logService, "siliconflow", actualModel));
+            }
+            default -> throw new ServerWebInputException("不支持的供应商: " + actualProvider);
+        };
+    }
+
+    // ==================== 自定义参数的内部实现 ====================
+
+    private static class CustomOpenAiImageModel implements ImageModel {
+        private final String apiKey;
+        private final String baseUrl;
+        private final String model;
+        private final WebClient webClient;
+
+        CustomOpenAiImageModel(String apiKey, String baseUrl, String model, WebClient webClient) {
+            this.apiKey = apiKey;
+            this.baseUrl = baseUrl;
+            this.model = model;
+            this.webClient = webClient;
+        }
+
+        @Override
+        public Mono<List<String>> generate(String prompt) {
+            return generate(prompt, ImageOptions.defaults());
+        }
+
+        @Override
+        public Mono<List<String>> generate(String prompt, ImageOptions options) {
+            String apiUrl = (baseUrl != null && !baseUrl.isBlank())
+                ? baseUrl.replaceAll("/+$", "") + "/v1/images/generations"
+                : OPENAI_IMAGE_API;
+            String size = options.getSize() != null ? options.getSize() : "1024x1024";
+            int n = model.equals("dall-e-3") ? 1 : Math.max(1, Math.min(options.getN(), 10));
+
+            Map<String, Object> request = new java.util.HashMap<>();
+            request.put("prompt", prompt);
+            request.put("model", model);
+            request.put("size", size);
+            request.put("n", n);
+            request.put("response_format", "url");
+            if (options.getQuality() != null) request.put("quality", options.getQuality());
+            if (options.getStyle() != null) request.put("style", options.getStyle());
+
+            return webClient.post().uri(apiUrl)
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .bodyValue(request).retrieve()
+                .bodyToMono(OpenAiImageModel.ImageResponse.class)
+                .map(r -> r.data().stream().map(OpenAiImageModel.ImageData::url).toList());
+        }
+    }
+
+    private static class CustomZhipuImageModel implements ImageModel {
+        private static final String ZHIPU_API = "https://open.bigmodel.cn/api/paas/v4/images/generations";
+        private final String apiKey;
+        private final String model;
+        private final WebClient webClient;
+
+        CustomZhipuImageModel(String apiKey, String model, WebClient webClient) {
+            this.apiKey = apiKey;
+            this.model = model;
+            this.webClient = webClient;
+        }
+
+        @Override
+        public Mono<List<String>> generate(String prompt) {
+            return generate(prompt, ImageOptions.defaults());
+        }
+
+        @Override
+        public Mono<List<String>> generate(String prompt, ImageOptions options) {
+            String size = options.getSize() != null ? options.getSize() : "1024x1024";
+            Map<String, Object> request = Map.of("prompt", prompt, "model", model, "size", size);
+            return webClient.post().uri(ZHIPU_API)
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .bodyValue(request).retrieve()
+                .bodyToMono(ZhipuImageModel.ZhipuImageResponse.class)
+                .map(r -> r.data().stream().map(ZhipuImageModel.ZhipuImageData::url).toList());
+        }
+    }
+
+    private static class CustomSiliconFlowImageModel implements ImageModel {
+        private static final String SF_API = "https://api.siliconflow.cn/v1/images/generations";
+        private final String apiKey;
+        private final String model;
+        private final ImageOptions defaultOptions;
+        private final WebClient webClient;
+
+        CustomSiliconFlowImageModel(String apiKey, String model, ImageOptions defaultOptions, WebClient webClient) {
+            this.apiKey = apiKey;
+            this.model = model;
+            this.defaultOptions = defaultOptions;
+            this.webClient = webClient;
+        }
+
+        @Override
+        public Mono<List<String>> generate(String prompt) {
+            return generate(prompt, defaultOptions != null ? defaultOptions : ImageOptions.defaults());
+        }
+
+        @Override
+        public Mono<List<String>> generate(String prompt, ImageOptions options) {
+            String size = options.getSize() != null ? options.getSize() : "1024x1024";
+            Map<String, Object> request = new java.util.HashMap<>();
+            request.put("prompt", prompt);
+            request.put("model", model);
+            request.put("image_size", size);
+            if (options.getSteps() != null) request.put("num_inference_steps", options.getSteps());
+            if (options.getGuidanceScale() != null) request.put("guidance_scale", options.getGuidanceScale());
+            if (options.getSeed() != null) request.put("seed", options.getSeed());
+            if (options.getNegativePrompt() != null) request.put("negative_prompt", options.getNegativePrompt());
+
+            return webClient.post().uri(SF_API)
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .bodyValue(request).retrieve()
+                .bodyToMono(SiliconFlowImageModel.SiliconFlowImageResponse.class)
+                .map(r -> r.images().stream().map(SiliconFlowImageModel.SiliconFlowImageData::url).toList());
+        }
+    }
+
     /**
      * OpenAI DALL-E 图像模型实现
      */

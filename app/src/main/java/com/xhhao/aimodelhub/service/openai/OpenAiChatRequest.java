@@ -81,6 +81,31 @@ public class OpenAiChatRequest {
     
     private Map<String, String> metadata;
 
+    // ==================== 硅基流动特有 ====================
+
+    @JsonProperty("enable_thinking")
+    private Boolean enableThinking;
+
+    @JsonProperty("thinking_budget")
+    private Integer thinkingBudget;
+
+    @JsonProperty("min_p")
+    private Double minP;
+
+    @JsonProperty("top_k")
+    private Integer topK;
+
+    @JsonProperty("repetition_penalty")
+    private Double repetitionPenalty;
+
+    // ==================== 智谱特有 ====================
+
+    @JsonProperty("request_id")
+    private String requestId;
+
+    @JsonProperty("web_search")
+    private Boolean webSearch;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
