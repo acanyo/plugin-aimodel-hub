@@ -1,6 +1,7 @@
 package com.xhhao.aimodelhub.api;
 
 import com.xhhao.aimodelhub.api.internal.ChatModelFactory;
+import com.xhhao.aimodelhub.api.internal.ChatModelsHolder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -38,18 +39,15 @@ import java.util.List;
  */
 public final class ChatModels {
 
-    private static ChatModelFactory factory;
     private static Provider defaultProvider = Provider.SILICONFLOW;
 
     private ChatModels() {
     }
 
-    /**
-     * 初始化（由插件启动时调用）
-     */
-    public static void init(ChatModelFactory chatModelFactory) {
-        factory = chatModelFactory;
+    private static ChatModelFactory getFactory() {
+        return ChatModelsHolder.getFactory();
     }
+
 
     /**
      * 发送消息（使用默认供应商）
@@ -108,7 +106,7 @@ public final class ChatModels {
      */
     public static Mono<String> chat(Provider provider, ChatOptions options, String message) {
         checkInitialized();
-        return factory.create(provider.name().toLowerCase(), options)
+        return getFactory().create(provider.name().toLowerCase(), options)
             .flatMap(m -> m.chat(message));
     }
 
@@ -117,7 +115,7 @@ public final class ChatModels {
      */
     public static Flux<String> chatStream(Provider provider, ChatOptions options, String message) {
         checkInitialized();
-        return factory.create(provider.name().toLowerCase(), options)
+        return getFactory().create(provider.name().toLowerCase(), options)
             .flatMapMany(m -> m.chatStream(message));
     }
 
@@ -126,7 +124,7 @@ public final class ChatModels {
      */
     public static Mono<String> chat(Provider provider, ChatOptions options, List<ChatMessage> messages) {
         checkInitialized();
-        return factory.create(provider.name().toLowerCase(), options)
+        return getFactory().create(provider.name().toLowerCase(), options)
             .flatMap(m -> m.chat(messages));
     }
 
@@ -135,7 +133,7 @@ public final class ChatModels {
      */
     public static Flux<String> chatStream(Provider provider, ChatOptions options, List<ChatMessage> messages) {
         checkInitialized();
-        return factory.create(provider.name().toLowerCase(), options)
+        return getFactory().create(provider.name().toLowerCase(), options)
             .flatMapMany(m -> m.chatStream(messages));
     }
 
@@ -189,7 +187,7 @@ public final class ChatModels {
      */
     public static Mono<ChatModel> withMemory(Provider provider, String systemPrompt) {
         checkInitialized();
-        return factory.withMemory(provider.name().toLowerCase(), systemPrompt);
+        return getFactory().withMemory(provider.name().toLowerCase(), systemPrompt);
     }
 
     /**
@@ -209,23 +207,23 @@ public final class ChatModels {
     private static Mono<ChatModel> getModel(Provider provider) {
         checkInitialized();
         return switch (provider) {
-            case OPENAI -> factory.openai();
-            case SILICONFLOW -> factory.siliconflow();
-            case ZHIPU -> factory.zhipu();
+            case OPENAI -> getFactory().openai();
+            case SILICONFLOW -> getFactory().siliconflow();
+            case ZHIPU -> getFactory().zhipu();
         };
     }
 
     private static Mono<ChatModel> getModel(Provider provider, String apiKey, String model) {
         checkInitialized();
         return switch (provider) {
-            case OPENAI -> factory.openai(apiKey, model);
-            case SILICONFLOW -> factory.siliconflow(apiKey, model);
-            case ZHIPU -> factory.zhipu(apiKey, model);
+            case OPENAI -> getFactory().openai(apiKey, model);
+            case SILICONFLOW -> getFactory().siliconflow(apiKey, model);
+            case ZHIPU -> getFactory().zhipu(apiKey, model);
         };
     }
 
     private static void checkInitialized() {
-        if (factory == null) {
+        if (getFactory() == null) {
             throw new IllegalStateException("ChatModels 未初始化，请确保 AI Model Hub 插件已启动");
         }
     }

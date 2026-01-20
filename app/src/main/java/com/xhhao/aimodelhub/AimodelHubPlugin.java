@@ -1,9 +1,9 @@
 package com.xhhao.aimodelhub;
 
-import com.xhhao.aimodelhub.api.ChatModels;
-import com.xhhao.aimodelhub.api.ImageModels;
 import com.xhhao.aimodelhub.api.internal.ChatModelFactory;
+import com.xhhao.aimodelhub.api.internal.ChatModelsHolder;
 import com.xhhao.aimodelhub.api.internal.ImageModelFactory;
+import com.xhhao.aimodelhub.api.internal.ImageModelsHolder;
 import com.xhhao.aimodelhub.extension.AiChatLog;
 import org.springframework.stereotype.Component;
 import run.halo.app.extension.SchemeManager;
@@ -64,8 +64,8 @@ public class AimodelHubPlugin extends BasePlugin {
         });
         
         // 初始化静态入口
-        ChatModels.init(chatModelFactory);
-        ImageModels.init(imageModelFactory);
+        ChatModelsHolder.init(chatModelFactory);
+        ImageModelsHolder.init(imageModelFactory);
         
         System.out.println("AI Model Hub 插件启动成功！");
     }

@@ -1,6 +1,7 @@
 package com.xhhao.aimodelhub.api;
 
 import com.xhhao.aimodelhub.api.internal.ImageModelFactory;
+import com.xhhao.aimodelhub.api.internal.ImageModelsHolder;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -31,17 +32,13 @@ import java.util.List;
  */
 public final class ImageModels {
 
-    private static ImageModelFactory factory;
     private static Provider defaultProvider = Provider.SILICONFLOW;
 
     private ImageModels() {
     }
 
-    /**
-     * 初始化（由插件启动时调用）
-     */
-    public static void init(ImageModelFactory imageModelFactory) {
-        factory = imageModelFactory;
+    private static ImageModelFactory getFactory() {
+        return ImageModelsHolder.getFactory();
     }
 
     /**
@@ -100,7 +97,7 @@ public final class ImageModels {
      */
     public static Mono<List<String>> generate(Provider provider, String apiKey, String model, String prompt) {
         checkInitialized();
-        return factory.create(provider.name().toLowerCase(), 
+        return getFactory().create(provider.name().toLowerCase(), 
                 ImageOptions.builder().apiKey(apiKey).model(model).build())
             .flatMap(m -> m.generate(prompt, ImageOptions.defaults()));
     }
@@ -116,7 +113,7 @@ public final class ImageModels {
     public static Mono<List<String>> generate(Provider provider, ImageOptions options, String prompt) {
         checkInitialized();
         if (options.getApiKey() != null) {
-            return factory.create(provider.name().toLowerCase(), options)
+            return getFactory().create(provider.name().toLowerCase(), options)
                 .flatMap(m -> m.generate(prompt, options));
         }
         return getModel(provider).flatMap(model -> model.generate(prompt, options));
@@ -138,14 +135,14 @@ public final class ImageModels {
 
     private static Mono<ImageModel> getModel(Provider provider) {
         return switch (provider) {
-            case OPENAI -> factory.openai();
-            case ZHIPU -> factory.zhipu();
-            case SILICONFLOW -> factory.siliconflow();
+            case OPENAI -> getFactory().openai();
+            case ZHIPU -> getFactory().zhipu();
+            case SILICONFLOW -> getFactory().siliconflow();
         };
     }
 
     private static void checkInitialized() {
-        if (factory == null) {
+        if (getFactory() == null) {
             throw new IllegalStateException("ImageModels 未初始化，请确保 AI Model Hub 插件已启动");
         }
     }
