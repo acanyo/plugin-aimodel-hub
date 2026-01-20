@@ -10,15 +10,15 @@ spec:
   requires: ">=2.22.0"
   author:
     name: Handsome
-    website: https://github.com/Handsome
+    website: https://www.xhhao.com/
   logo: logo.svg
-  homepage: https://github.com/Handsome/aimodel-hub#readme
-  repo: https://github.com/Handsome/aimodel-hub
-  issues: https://github.com/Handsome/aimodel-hub/issues
+  homepage: https://www.xhhao.com/
+  repo: https://github.com/acanyo/plugin-aimodel-hub
+  issues: https://github.com/acanyo/plugin-aimodel-hub/issues
   displayName: "AI 模型聚合接口"
   description: "为 Halo 插件提供统一的 AI 能力调用接口，支持 OpenAI、智谱、硅基流动等多个模型供应商。"
   license:
     - name: "GPL-3.0"
-      url: "https://github.com/Handsome/aimodel-hub/blob/main/LICENSE"
+      url: "https://github.com/acanyo/plugin-aimodel-hub/blob/main/LICENSE"
   settingName: "aimodel-hub-settings"
   configMapName: "aimodel-hub-configmap"
