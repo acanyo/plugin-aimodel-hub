@@ -1,41 +1,31 @@
 package com.xhhao.aimodelhub.api;
 
+import reactor.core.publisher.Mono;
+
 /**
- * 聊天模型工厂接口（对外 API）
- * <p>
- * 其他插件通过此接口获取 AI 模型客户端。
- * </p>
- *
- * <pre>{@code
- * // 单轮对话 / 手动管理多轮
- * ChatModel model = factory.openai();
- * model.chat("你好");
- *
- * // 自动管理多轮对话
- * ChatModel chat = factory.openaiWithMemory("你是助手");
- * chat.chat("你好");   // 第一轮
- * chat.chat("再见");   // 第二轮，自动带上下文
- * }</pre>
+ * 聊天模型工厂接口
  *
  * @author Handsome
+ * @since 1.0.0
  */
 public interface ChatModelFactory {
 
     /**
-     * 获取 OpenAI 模型（使用插件配置）
+     * 获取 OpenAI 模型（响应式）
      */
-    ChatModel openai();
+    Mono<ChatModel> openai();
 
     /**
-     * 获取 OpenAI 模型（指定模型名）
+     * 获取硅基流动模型（响应式）
      */
-    ChatModel openai(String modelName);
+    Mono<ChatModel> siliconflow();
 
     /**
-     * 获取 OpenAI 模型（自动管理对话历史）
+     * 获取带有记忆的模型（响应式）
      *
-     * @param systemPrompt 系统提示词（角色设定）
-     * @return 自动管理上下文的模型
+     * @param provider     提供商名称(openai/siliconflow)
+     * @param systemPrompt 系统提示语
+     * @return 带有记忆的 ChatModel
      */
-    ChatModel openaiWithMemory(String systemPrompt);
+    Mono<ChatModel> withMemory(String provider, String systemPrompt);
 }

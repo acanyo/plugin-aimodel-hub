@@ -43,10 +43,21 @@ public final class AiModelConstants {
     public static final String DEFAULT_OPENAI_MODEL = "gpt-4o";
 
     /**
+     * 硅基流动默认模型
+     */
+    public static final String DEFAULT_SILICONFLOW_MODEL = "Qwen/Qwen2.5-7B-Instruct";
+
+    /**
+     * 硅基流动 API 地址
+     */
+    public static final String SILICONFLOW_BASE_URL = "https://api.siliconflow.cn";
+
+    /**
      * 供应商名称
      */
     public static final class Provider {
         public static final String OPENAI = "openai";
+        public static final String SILICONFLOW = "siliconflow";
         public static final String CLAUDE = "claude";
         public static final String GEMINI = "gemini";
 

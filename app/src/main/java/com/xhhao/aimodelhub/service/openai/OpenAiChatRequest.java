@@ -20,11 +20,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OpenAiChatRequest {
 
-    // ===== 必需 =====
     private List<OpenAiMessage> messages;
     private String model;
-
-    // ===== 可选 =====
     private Boolean stream;
     
     @JsonProperty("stream_options")

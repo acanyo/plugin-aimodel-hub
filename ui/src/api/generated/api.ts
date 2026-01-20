@@ -16,5 +16,6 @@
 
 export * from './api/ai-chat-log-v1alpha1-api';
 export * from './api/ai-chat-log-v1alpha1-console-api';
+export * from './api/console-api-aimodel-hub-xhhao-com-v1alpha1-api';
 export * from './api/test-chat-v1alpha1-console-api';
 

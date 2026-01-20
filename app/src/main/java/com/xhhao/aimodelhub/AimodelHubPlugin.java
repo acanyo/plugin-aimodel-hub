@@ -1,5 +1,9 @@
 package com.xhhao.aimodelhub;
 
+import com.xhhao.aimodelhub.api.ChatModelFactory;
+import com.xhhao.aimodelhub.api.ChatModels;
+import com.xhhao.aimodelhub.api.ImageModelFactory;
+import com.xhhao.aimodelhub.api.ImageModels;
 import com.xhhao.aimodelhub.extension.AiChatLog;
 import org.springframework.stereotype.Component;
 import run.halo.app.extension.SchemeManager;
@@ -21,10 +25,15 @@ import java.util.Optional;
 public class AimodelHubPlugin extends BasePlugin {
 
     private final SchemeManager schemeManager;
+    private final ChatModelFactory chatModelFactory;
+    private final ImageModelFactory imageModelFactory;
 
-    public AimodelHubPlugin(PluginContext pluginContext, SchemeManager schemeManager) {
+    public AimodelHubPlugin(PluginContext pluginContext, SchemeManager schemeManager,
+                            ChatModelFactory chatModelFactory, ImageModelFactory imageModelFactory) {
         super(pluginContext);
         this.schemeManager = schemeManager;
+        this.chatModelFactory = chatModelFactory;
+        this.imageModelFactory = imageModelFactory;
     }
 
     @Override
@@ -53,6 +62,11 @@ public class AimodelHubPlugin extends BasePlugin {
                     .map(String::valueOf)
                     .orElse(null)));
         });
+        
+        // 初始化静态入口
+        ChatModels.init(chatModelFactory);
+        ImageModels.init(imageModelFactory);
+        
         System.out.println("AI Model Hub 插件启动成功！");
     }
 

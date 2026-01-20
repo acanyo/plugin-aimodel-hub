@@ -4,8 +4,8 @@ metadata:
   name: aimodel-hub-settings
 spec:
   forms:
-    - group: provider
-      label: 模型供应商
+    - group: text
+      label: 文字模型
       formSchema:
         - $formkit: group
           name: openai
@@ -51,3 +51,97 @@ spec:
                   value: o1-pro
                 - label: o3-mini
                   value: o3-mini
+
+        - $formkit: group
+          name: siliconflow
+          label: 硅基流动
+          help: 查看硅基流动帮助文档
+          __raw__sectionsSchema:
+            help:
+              children:
+                - $el: span
+                  children: "查看 "
+                - $el: a
+                  children: "硅基流动帮助文档"
+                  attrs:
+                    href: "https://docs.siliconflow.cn/cn/userguide/introduction"
+                    target: "_blank"
+                    style:
+                      color: "#1890ff"
+          children:
+            - $formkit: password
+              name: apiKey
+              label: API Key
+              help: 点击这里获取密钥
+              __raw__sectionsSchema:
+                help:
+                  children:
+                    - $el: a
+                      children: "点击这里获取密钥"
+                      attrs:
+                        href: "https://cloud.siliconflow.cn/me/account/ak"
+                        target: "_blank"
+                        style:
+                          color: "#1890ff"
+              placeholder: sk-xxxxxxxxxxxxxxxx
+
+            - $formkit: select
+              name: model
+              label: 默认模型
+              help: 模型列表从硅基流动 API 实时获取
+              action: /apis/console.api.aimodel-hub.xhhao.com/v1alpha1/models/siliconflow
+              value: Qwen/Qwen2.5-7B-Instruct
+              searchable: true
+              allowCreate: true
+              clearable: true
+              requestOption:
+                method: GET
+                fieldSelectorKey: name
+
+    - group: image
+      label: 图像模型
+      formSchema:
+        - $formkit: group
+          name: openai
+          label: OpenAI DALL-E
+          help: 使用 OpenAI 的 DALL-E 进行图像生成
+          children:
+            - $formkit: text
+              name: baseUrl
+              label: 接口地址
+              help: "默认为 OpenAI 官方地址"
+              placeholder: https://api.openai.com
+              value: "https://api.openai.com"
+
+            - $formkit: password
+              name: apiKey
+              label: API Key
+              placeholder: sk-xxxxxxxxxxxxxxxx
+
+            - $formkit: select
+              name: model
+              label: 默认模型
+              value: dall-e-3
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: DALL-E 3 (推荐)
+                  value: dall-e-3
+                - label: DALL-E 2
+                  value: dall-e-2
+
+            - $formkit: select
+              name: size
+              label: 默认尺寸
+              value: 1024x1024
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: 1024×1024 (方形)
+                  value: 1024x1024
+                - label: 1024×1792 (竖版)
+                  value: 1024x1792
+                - label: 1792×1024 (横版)
+                  value: 1792x1024

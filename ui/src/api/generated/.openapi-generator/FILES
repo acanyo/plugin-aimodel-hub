@@ -4,6 +4,7 @@
 api.ts
 api/ai-chat-log-v1alpha1-api.ts
 api/ai-chat-log-v1alpha1-console-api.ts
+api/console-api-aimodel-hub-xhhao-com-v1alpha1-api.ts
 api/test-chat-v1alpha1-console-api.ts
 base.ts
 common.ts

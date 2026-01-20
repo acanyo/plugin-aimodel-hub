@@ -1,4 +1,4 @@
-package com.xhhao.aimodelhub.service;
+package com.xhhao.aimodelhub.service.common;
 
 import com.xhhao.aimodelhub.api.constant.AiModelConstants;
 import com.xhhao.aimodelhub.extension.AiChatLog;

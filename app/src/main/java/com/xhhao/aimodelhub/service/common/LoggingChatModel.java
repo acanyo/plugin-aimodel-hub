@@ -1,9 +1,9 @@
-package com.xhhao.aimodelhub.service;
+package com.xhhao.aimodelhub.service.common;
 
 import com.xhhao.aimodelhub.api.ChatMessage;
 import com.xhhao.aimodelhub.api.ChatModel;
 import com.xhhao.aimodelhub.extension.AiChatLog;
-import com.xhhao.aimodelhub.service.openai.OpenAiChatModel;
+import com.xhhao.aimodelhub.service.openai.OpenAiCompatibleChatModel;
 import com.xhhao.aimodelhub.service.openai.OpenAiChatRequest;
 import com.xhhao.aimodelhub.service.openai.OpenAiChatResponse;
 import com.xhhao.aimodelhub.service.openai.OpenAiMessage;
@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class LoggingChatModel implements ChatModel {
 
-    private final OpenAiChatModel delegate;
+    private final OpenAiCompatibleChatModel delegate;
     private final AiChatLogService logService;
     private final String callerPlugin;
     private final String provider;
 
-    public LoggingChatModel(OpenAiChatModel delegate, AiChatLogService logService,
+    public LoggingChatModel(OpenAiCompatibleChatModel delegate, AiChatLogService logService,
                             String callerPlugin, String provider) {
         this.delegate = delegate;
         this.logService = logService;
@@ -82,10 +82,6 @@ public class LoggingChatModel implements ChatModel {
 
     /**
      * 构建 OpenAI 请求
-     *
-     * @param messages 消息列表
-     * @param stream   是否流式
-     * @return OpenAI 请求对象
      */
     private OpenAiChatRequest buildRequest(List<ChatMessage> messages, boolean stream) {
         List<OpenAiMessage> openAiMessages = messages.stream()

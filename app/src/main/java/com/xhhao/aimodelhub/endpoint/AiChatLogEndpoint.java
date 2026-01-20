@@ -1,7 +1,7 @@
 package com.xhhao.aimodelhub.endpoint;
 
 import com.xhhao.aimodelhub.query.AiChatLogQuery;
-import com.xhhao.aimodelhub.service.AiChatLogService;
+import com.xhhao.aimodelhub.service.common.AiChatLogService;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;

@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * OpenAI Chat 模型客户端
+ * OpenAI 兼容 API 客户端
  * <p>
- * 基于 WebClient 实现，支持流式和非流式响应
+ * 支持所有使用 OpenAI 兼容接口的服务商（OpenAI、硅基流动等）
  * </p>
  *
  * @author Handsome
@@ -32,7 +32,7 @@ import java.util.Map;
  */
 @Slf4j
 @Getter
-public class OpenAiChatModel implements ChatModel {
+public class OpenAiCompatibleChatModel implements ChatModel {
 
     private static final String CHAT_COMPLETIONS_PATH = "/v1/chat/completions";
     private static final String SSE_DONE_SIGNAL = "[DONE]";
@@ -67,17 +67,17 @@ public class OpenAiChatModel implements ChatModel {
     private final Map<String, Integer> logitBias;
 
     /**
-     * 缓存的 WebClient 实例，避免每次请求都创建
+     * 缓存的 WebClient 实例
      */
     private final WebClient webClient;
 
     @Builder
-    public OpenAiChatModel(String apiKey, String modelName, String baseUrl,
-                           Map<String, String> customHeaders, String organizationId, String projectId,
-                           Duration timeout, Integer maxRetries,
-                           Double temperature, Double topP, Integer maxTokens, Integer maxCompletionTokens,
-                           Double frequencyPenalty, Double presencePenalty, List<String> stop,
-                           Integer seed, String user, Map<String, Integer> logitBias) {
+    public OpenAiCompatibleChatModel(String apiKey, String modelName, String baseUrl,
+                                     Map<String, String> customHeaders, String organizationId, String projectId,
+                                     Duration timeout, Integer maxRetries,
+                                     Double temperature, Double topP, Integer maxTokens, Integer maxCompletionTokens,
+                                     Double frequencyPenalty, Double presencePenalty, List<String> stop,
+                                     Integer seed, String user, Map<String, Integer> logitBias) {
         this.apiKey = apiKey;
         this.modelName = modelName;
         this.baseUrl = baseUrl;
@@ -101,9 +101,6 @@ public class OpenAiChatModel implements ChatModel {
 
     /**
      * 发送聊天请求（非流式）
-     *
-     * @param request 请求对象
-     * @return 响应对象
      */
     public Mono<OpenAiChatResponse> chat(OpenAiChatRequest request) {
         prepareRequest(request, false);
@@ -116,9 +113,6 @@ public class OpenAiChatModel implements ChatModel {
 
     /**
      * 发送流式聊天请求
-     *
-     * @param request 请求对象
-     * @return 流式响应
      */
     public Flux<OpenAiChatResponse> chatStream(OpenAiChatRequest request) {
         prepareRequest(request, true);
@@ -239,7 +233,7 @@ public class OpenAiChatModel implements ChatModel {
         try {
             return MAPPER.readValue(json, OpenAiChatResponse.class);
         } catch (JsonProcessingException e) {
-            log.warn("解析 OpenAI 响应失败: {}", json, e);
+            log.warn("解析响应失败: {}", json, e);
             return null;
         }
     }

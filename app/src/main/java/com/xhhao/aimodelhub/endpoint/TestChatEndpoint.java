@@ -1,7 +1,7 @@
 package com.xhhao.aimodelhub.endpoint;
 
 import com.xhhao.aimodelhub.api.ChatModel;
-import com.xhhao.aimodelhub.service.ChatModelFactoryImpl;
+import com.xhhao.aimodelhub.api.ChatModelFactory;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -26,7 +26,7 @@ import run.halo.app.extension.GroupVersion;
 @RequiredArgsConstructor
 public class TestChatEndpoint implements CustomEndpoint {
 
-    private final ChatModelFactoryImpl chatModelFactory;
+    private final ChatModelFactory chatModelFactory;
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
@@ -105,19 +105,15 @@ public class TestChatEndpoint implements CustomEndpoint {
     }
     
     /**
-     * 根据供应商获取模型（响应式）
+     * 根据供应商获取模型
      */
     private Mono<ChatModel> getChatModelReactive(String provider, String model) {
-        if (provider == null || provider.isBlank()) {
-            provider = "openai";
-        }
+        String actualProvider = (provider == null || provider.isBlank()) ? "siliconflow" : provider.toLowerCase();
         
-        return switch (provider.toLowerCase()) {
-            case "openai" -> chatModelFactory.openaiReactive(model, "test-endpoint");
-            // 未来可以添加其他供应商
-            // case "claude" -> chatModelFactory.claudeReactive(model, "test-endpoint");
-            // case "gemini" -> chatModelFactory.geminiReactive(model, "test-endpoint");
-            default -> Mono.error(new IllegalArgumentException("不支持的供应商: " + provider));
+        return switch (actualProvider) {
+            case "openai" -> chatModelFactory.openai();
+            case "siliconflow" -> chatModelFactory.siliconflow();
+            default -> Mono.error(new IllegalArgumentException("不支持的供应商: " + actualProvider));
         };
     }
 

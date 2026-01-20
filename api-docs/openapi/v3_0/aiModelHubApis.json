@@ -5,7 +5,7 @@
     "version" : "2.22.10"
   },
   "servers" : [ {
-    "url" : "http://localhost:56476",
+    "url" : "http://localhost:31378",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -281,6 +281,31 @@
         "operationId" : "GetAiChatLogStats",
         "responses" : { },
         "tags" : [ "AiChatLogV1alpha1Console" ]
+      }
+    },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/images/generate" : {
+      "post" : {
+        "description" : "生成图像",
+        "operationId" : "generateImage",
+        "responses" : { },
+        "tags" : [ "console.api.aimodel-hub.xhhao.com/v1alpha1" ]
+      }
+    },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/models/{provider}" : {
+      "get" : {
+        "description" : "获取指定供应商的模型列表",
+        "operationId" : "listModelsByProvider",
+        "parameters" : [ {
+          "description" : "供应商名称",
+          "in" : "path",
+          "name" : "provider",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : { },
+        "tags" : [ "console.api.aimodel-hub.xhhao.com/v1alpha1" ]
       }
     },
     "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/testchat/simple" : {
