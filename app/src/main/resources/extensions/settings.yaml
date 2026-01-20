@@ -7,17 +7,113 @@ spec:
     - group: text
       label: 文字模型
       formSchema:
+        - $el: div
+          attrs:
+            style: |
+              margin-bottom: 1.25rem;
+              padding: 1rem 1.25rem;
+              background: #fff;
+              border-radius: 0.75rem;
+              border: 1px solid #e5e7eb;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          children:
+            - $el: div
+              attrs:
+                style: |
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  margin-bottom: 0.5rem;
+              children:
+                - $el: span
+                  attrs:
+                    style: "font-size: 1.25rem;"
+                  children: "🤖"
+                - $el: span
+                  attrs:
+                    style: "font-weight: 600; color: #1f2937; font-size: 1rem;"
+                  children: "AI 模型聚合接口"
+            - $el: div
+              attrs:
+                style: |
+                  color: #6b7280;
+                  font-size: 0.875rem;
+                  margin-bottom: 0.75rem;
+                  padding-bottom: 0.75rem;
+                  border-bottom: 1px solid #f3f4f6;
+              children: "为 Halo 插件提供统一的 AI 能力调用接口，支持 OpenAI、智谱、硅基流动等多个模型供应商。"
+            - $el: div
+              attrs:
+                style: "font-weight: 500; color: #374151; font-size: 0.875rem; margin-bottom: 0.5rem;"
+              children: "🚀 快速开始"
+            - $el: div
+              attrs:
+                style: |
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 0.5rem;
+              children:
+                - $el: a
+                  attrs:
+                    href: "https://api.hallucodex.chat/register?aff=76JI"
+                    target: "_blank"
+                    style: |
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 0.375rem;
+                      color: #fff;
+                      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                      padding: 0.5rem 1rem;
+                      border-radius: 0.5rem;
+                      text-decoration: none;
+                      font-size: 0.875rem;
+                      font-weight: 500;
+                      transition: opacity 0.2s;
+                  children: "🚀 使用幻枢 API"
+                - $el: a
+                  attrs:
+                    href: "https://qm.qq.com/q/mPJeUOtG5G"
+                    target: "_blank"
+                    style: |
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 0.375rem;
+                      color: #374151;
+                      background: #f3f4f6;
+                      padding: 0.5rem 1rem;
+                      border-radius: 0.5rem;
+                      text-decoration: none;
+                      font-size: 0.875rem;
+                      font-weight: 500;
+                  children: "💬 QQ群 766203360"
+                - $el: a
+                  attrs:
+                    href: "https://docs.lik.cc/"
+                    target: "_blank"
+                    style: |
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 0.375rem;
+                      color: #374151;
+                      background: #f3f4f6;
+                      padding: 0.5rem 1rem;
+                      border-radius: 0.5rem;
+                      text-decoration: none;
+                      font-size: 0.875rem;
+                      font-weight: 500;
+                  children: "📖 查看文档"
+
         - $formkit: group
           name: openai
           label: OpenAI
-          help: 支持遵循 OpenAI 接口规范的模型，需要修改接口地址。
+          help: 支持遵循 OpenAI 接口规范的模型，默认使用幻枢 API。
           children:
             - $formkit: text
               name: baseUrl
               label: 接口地址
-              help: "默认为 OpenAI 官方地址，可修改为代理或兼容接口地址"
-              placeholder: https://api.openai.com
-              value: "https://api.openai.com"
+              help: "默认为幻枢 API 地址，可修改为其他代理或兼容接口"
+              placeholder: https://api.xplus.chat
+              value: "https://api.xplus.chat"
 
             - $formkit: password
               name: apiKey

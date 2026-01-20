@@ -61,7 +61,8 @@ export interface AiChatLogSpec {
 export const AiChatLogSpecCallTypeEnum = {
     Chat: 'CHAT',
     Stream: 'STREAM',
-    Embedding: 'EMBEDDING'
+    Embedding: 'EMBEDDING',
+    Image: 'IMAGE'
 } as const;
 
 export type AiChatLogSpecCallTypeEnum = typeof AiChatLogSpecCallTypeEnum[keyof typeof AiChatLogSpecCallTypeEnum];

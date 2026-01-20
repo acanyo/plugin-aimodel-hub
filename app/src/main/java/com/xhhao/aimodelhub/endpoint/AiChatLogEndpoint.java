@@ -43,6 +43,10 @@ public class AiChatLogEndpoint implements CustomEndpoint {
                 builder -> builder.operationId("GetAiChatLogStats")
                     .tag(tag)
                     .description("获取 AI 调用统计"))
+            .DELETE("/aichatlogs/clear", this::clearLogs,
+                builder -> builder.operationId("ClearAiChatLogs")
+                    .tag(tag)
+                    .description("清空所有 AI 调用日志"))
             .build();
     }
 
@@ -68,4 +72,11 @@ public class AiChatLogEndpoint implements CustomEndpoint {
             .flatMap(stats -> ServerResponse.ok().bodyValue(stats));
     }
 
+    /**
+     * 清空所有日志
+     */
+    private Mono<ServerResponse> clearLogs(ServerRequest request) {
+        return chatLogService.clearLogs()
+            .then(ServerResponse.ok().bodyValue(java.util.Map.of("success", true, "message", "日志已清空")));
+    }
 }

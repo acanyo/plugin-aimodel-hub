@@ -4,6 +4,8 @@ import com.xhhao.aimodelhub.api.ImageModel;
 import com.xhhao.aimodelhub.api.ImageModelFactory;
 import com.xhhao.aimodelhub.api.ImageOptions;
 import com.xhhao.aimodelhub.config.SettingConfigGetter;
+import com.xhhao.aimodelhub.service.common.AiChatLogService;
+import com.xhhao.aimodelhub.service.common.LoggingImageModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ public class ImageModelFactoryImpl implements ImageModelFactory {
     private static final String OPENAI_IMAGE_API = "https://api.openai.com/v1/images/generations";
 
     private final SettingConfigGetter configGetter;
+    private final AiChatLogService logService;
     private final WebClient webClient = WebClient.builder().build();
 
     @Override
@@ -38,7 +41,9 @@ public class ImageModelFactoryImpl implements ImageModelFactory {
                 if (openaiConfig == null || openaiConfig.getApiKey() == null || openaiConfig.getApiKey().isBlank()) {
                     throw new ServerWebInputException("请先在插件设置中配置图像模型 API Key");
                 }
-                return new OpenAiImageModel(openaiConfig, webClient);
+                ImageModel model = new OpenAiImageModel(openaiConfig, webClient);
+                String modelName = openaiConfig.getModel() != null ? openaiConfig.getModel() : "dall-e-3";
+                return new LoggingImageModel(model, logService, "openai", modelName);
             });
     }
 
@@ -50,7 +55,9 @@ public class ImageModelFactoryImpl implements ImageModelFactory {
                 if (zhipuConfig == null || zhipuConfig.getApiKey() == null || zhipuConfig.getApiKey().isBlank()) {
                     throw new ServerWebInputException("请先在插件设置中配置智谱AI图像模型 API Key");
                 }
-                return new ZhipuImageModel(zhipuConfig, webClient);
+                ImageModel model = new ZhipuImageModel(zhipuConfig, webClient);
+                String modelName = zhipuConfig.getModel() != null ? zhipuConfig.getModel() : "cogview-3-flash";
+                return new LoggingImageModel(model, logService, "zhipu", modelName);
             });
     }
 
@@ -62,7 +69,9 @@ public class ImageModelFactoryImpl implements ImageModelFactory {
                 if (sfConfig == null || sfConfig.getApiKey() == null || sfConfig.getApiKey().isBlank()) {
                     throw new ServerWebInputException("请先在插件设置中配置硅基流动图像模型 API Key");
                 }
-                return new SiliconFlowImageModel(sfConfig, webClient);
+                ImageModel model = new SiliconFlowImageModel(sfConfig, webClient);
+                String modelName = sfConfig.getModel() != null ? sfConfig.getModel() : "FLUX.1-schnell";
+                return new LoggingImageModel(model, logService, "siliconflow", modelName);
             });
     }
 

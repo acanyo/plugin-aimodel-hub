@@ -5,7 +5,7 @@
     "version" : "2.22.10"
   },
   "servers" : [ {
-    "url" : "http://localhost:31378",
+    "url" : "http://localhost:64828",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -275,6 +275,14 @@
         "tags" : [ "AiChatLogV1alpha1Console" ]
       }
     },
+    "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/clear" : {
+      "delete" : {
+        "description" : "清空所有 AI 调用日志",
+        "operationId" : "ClearAiChatLogs",
+        "responses" : { },
+        "tags" : [ "AiChatLogV1alpha1Console" ]
+      }
+    },
     "/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/stats" : {
       "get" : {
         "description" : "获取 AI 调用统计",
@@ -423,7 +431,7 @@
           "callType" : {
             "type" : "string",
             "description" : "调用类型",
-            "enum" : [ "CHAT", "STREAM", "EMBEDDING" ]
+            "enum" : [ "CHAT", "STREAM", "EMBEDDING", "IMAGE" ]
           },
           "callerPlugin" : {
             "type" : "string",

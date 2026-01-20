@@ -28,6 +28,43 @@ import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError
 export const AiChatLogV1alpha1ConsoleApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * 清空所有 AI 调用日志
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        clearAiChatLogs: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/clear`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication basicAuth required
+            // http basic authentication required
+            setBasicAuthToObject(localVarRequestOptions, configuration)
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 获取 AI 调用统计
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -142,6 +179,17 @@ export const AiChatLogV1alpha1ConsoleApiFp = function(configuration?: Configurat
     const localVarAxiosParamCreator = AiChatLogV1alpha1ConsoleApiAxiosParamCreator(configuration)
     return {
         /**
+         * 清空所有 AI 调用日志
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async clearAiChatLogs(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.clearAiChatLogs(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AiChatLogV1alpha1ConsoleApi.clearAiChatLogs']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 获取 AI 调用统计
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -179,6 +227,14 @@ export const AiChatLogV1alpha1ConsoleApiFp = function(configuration?: Configurat
 export const AiChatLogV1alpha1ConsoleApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = AiChatLogV1alpha1ConsoleApiFp(configuration)
     return {
+        /**
+         * 清空所有 AI 调用日志
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        clearAiChatLogs(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.clearAiChatLogs(options).then((request) => request(axios, basePath));
+        },
         /**
          * 获取 AI 调用统计
          * @param {*} [options] Override http request option.
@@ -255,6 +311,16 @@ export interface AiChatLogV1alpha1ConsoleApiListAiChatLogsRequest {
  * @extends {BaseAPI}
  */
 export class AiChatLogV1alpha1ConsoleApi extends BaseAPI {
+    /**
+     * 清空所有 AI 调用日志
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AiChatLogV1alpha1ConsoleApi
+     */
+    public clearAiChatLogs(options?: RawAxiosRequestConfig) {
+        return AiChatLogV1alpha1ConsoleApiFp(this.configuration).clearAiChatLogs(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 获取 AI 调用统计
      * @param {*} [options] Override http request option.

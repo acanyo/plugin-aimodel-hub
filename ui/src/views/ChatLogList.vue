@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { VCard, VPageHeader, VPagination, VSpace, VEmpty, VButton, VEntity, VEntityField, VStatusDot, Dialog, VLoading, Toast, VEntityContainer, VDropdownItem } from '@halo-dev/components'
+import { VCard, VPageHeader, VPagination, VSpace, VEmpty, VButton, VEntity, VEntityField, VStatusDot, Dialog, VLoading, Toast, VEntityContainer, VDropdownItem, VModal } from '@halo-dev/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import RiRefreshLine from '~icons/ri/refresh-line'
 import RiRobot2Line from '~icons/ri/robot-2-line'
+import RiDeleteBin6Line from '~icons/ri/delete-bin-6-line'
 import { utils } from '@halo-dev/ui-shared'
 import { aiModelHubApiClient } from '@/api'
 
@@ -19,7 +20,7 @@ interface ListResult<T> {
   totalPages: number
 }
 
-type CallType = 'CHAT' | 'STREAM' | 'EMBEDDING'
+type CallType = 'CHAT' | 'STREAM' | 'EMBEDDING' | 'IMAGE'
 
 interface AiChatLog {
   metadata: {
@@ -95,6 +96,26 @@ const handleRefresh = async () => {
   refreshing.value = false
 }
 
+const handleClearLogs = async () => {
+  Dialog.warning({
+    title: '确认清空',
+    description: '确定要清空所有调用日志吗？此操作不可恢复。',
+    confirmType: 'danger',
+    confirmText: '清空',
+    cancelText: '取消',
+    onConfirm: async () => {
+      try {
+        await fetch('/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/aichatlogs/clear', { method: 'DELETE' })
+        Toast.success('日志已清空')
+        await handleRefresh()
+      } catch (error) {
+        console.error('Failed to clear logs:', error)
+        Toast.error('清空失败')
+      }
+    },
+  })
+}
+
 const handleDelete = async (log: AiChatLog) => {
   Dialog.warning({
     title: '确认删除',
@@ -127,6 +148,7 @@ const getCallTypeLabel = (log: AiChatLog) => {
   const callType = log.spec.callType
   if (callType === 'STREAM') return '流式'
   if (callType === 'EMBEDDING') return '嵌入'
+  if (callType === 'IMAGE') return '图像'
   return '非流'
 }
 
@@ -134,7 +156,35 @@ const getCallTypeClass = (log: AiChatLog) => {
   const callType = log.spec.callType
   if (callType === 'STREAM') return 'bg-teal-100 text-teal-600'
   if (callType === 'EMBEDDING') return 'bg-orange-100 text-orange-600'
+  if (callType === 'IMAGE') return 'bg-pink-100 text-pink-600'
   return 'bg-purple-100 text-purple-600'
+}
+
+const getResponseContent = (log: AiChatLog) => {
+  if (!log.status) return '无返回信息'
+  if (log.status.success) {
+    return log.status.responseSummary || '调用成功，无详细信息'
+  } else {
+    return log.status.errorMessage || '调用失败，无错误信息'
+  }
+}
+
+const selectedLog = ref<AiChatLog | null>(null)
+const showResponseModal = ref(false)
+
+const handleViewResponse = (log: AiChatLog) => {
+  selectedLog.value = log
+  showResponseModal.value = true
+}
+
+const extractImageUrls = (text: string): string[] => {
+  if (!text) return []
+  const urlRegex = /(https?:\/\/[^\s,]+\.(png|jpg|jpeg|gif|webp|svg)[^\s,]*)/gi
+  return text.match(urlRegex) || []
+}
+
+const isImageLog = (log: AiChatLog | null): boolean => {
+  return log?.spec.callType === 'IMAGE'
 }
 
 watch([page, size], () => {
@@ -153,12 +203,20 @@ onMounted(() => {
       <RiRobot2Line class=":uno: mr-2 self-center" />
     </template>
     <template #actions>
-      <VButton size="sm" @click="handleRefresh" :loading="refreshing">
-        <template #icon>
-          <RiRefreshLine />
-        </template>
-        刷新
-      </VButton>
+      <VSpace>
+        <VButton size="sm" type="danger" @click="handleClearLogs">
+          <template #icon>
+            <RiDeleteBin6Line />
+          </template>
+          清空日志
+        </VButton>
+        <VButton size="sm" @click="handleRefresh" :loading="refreshing">
+          <template #icon>
+            <RiRefreshLine />
+          </template>
+          刷新
+        </VButton>
+      </VSpace>
     </template>
   </VPageHeader>
 
@@ -221,11 +279,17 @@ onMounted(() => {
       <VEntityContainer v-else>
         <VEntity v-for="log in logs?.items" :key="log.metadata.name">
           <template #start>
-            <VEntityField
-              :title="log.spec.userMessage || '无消息'"
-              :description="`${log.spec.provider} / ${log.spec.model}`"
-              width="20rem"
-            />
+            <div 
+              v-tooltip="'点击查看返回结果'" 
+              @click="handleViewResponse(log)" 
+              class=":uno: cursor-pointer"
+            >
+              <VEntityField
+                :title="log.spec.userMessage || '无消息'"
+                :description="`${log.spec.provider} / ${log.spec.model}`"
+                width="20rem"
+              />
+            </div>
           </template>
           <template #end>
             <VEntityField>
@@ -267,6 +331,9 @@ onMounted(() => {
             </VEntityField>
           </template>
           <template #dropdownItems>
+            <VDropdownItem @click="handleViewResponse(log)">
+              查看返回日志
+            </VDropdownItem>
             <VDropdownItem type="danger" @click="handleDelete(log)">
               删除
             </VDropdownItem>
@@ -286,5 +353,70 @@ onMounted(() => {
         />
       </template>
     </VCard>
+
+    <!-- 返回结果弹窗 -->
+    <VModal
+      v-model:visible="showResponseModal"
+      :title="selectedLog?.status?.success ? '返回结果' : '错误信息'"
+      :width="600"
+    >
+      <div v-if="selectedLog" class=":uno: space-y-4">
+        <!-- 图像类型：展示图片 -->
+        <template v-if="isImageLog(selectedLog) && selectedLog.status?.success">
+          <div class=":uno: text-sm text-gray-600 mb-2">
+            生成的图像：
+          </div>
+          <div class=":uno: grid grid-cols-1 gap-4">
+            <div
+              v-for="(url, index) in extractImageUrls(selectedLog.status?.responseSummary || '')"
+              :key="index"
+              class=":uno: overflow-hidden rounded-lg border border-gray-200"
+            >
+              <img
+                :src="url"
+                :alt="`生成图像 ${index + 1}`"
+                class=":uno: w-full h-auto max-h-96 object-contain bg-gray-50"
+                loading="lazy"
+              />
+              <div class=":uno: p-2 bg-gray-50 border-t border-gray-200">
+                <a
+                  :href="url"
+                  target="_blank"
+                  class=":uno: text-xs text-blue-600 hover:underline break-all"
+                >
+                  {{ url }}
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="extractImageUrls(selectedLog.status?.responseSummary || '').length === 0"
+            class=":uno: text-gray-500 text-sm"
+          >
+            {{ selectedLog.status?.responseSummary || '无图像信息' }}
+          </div>
+        </template>
+
+        <!-- 文字类型或失败：展示文本 -->
+        <template v-else>
+          <div class=":uno: rounded-lg bg-gray-50 p-4">
+            <pre class=":uno: whitespace-pre-wrap break-words text-sm text-gray-700 font-mono">{{ getResponseContent(selectedLog) }}</pre>
+          </div>
+        </template>
+
+        <!-- 调用信息 -->
+        <div class=":uno: border-t border-gray-200 pt-4 mt-4">
+          <div class=":uno: grid grid-cols-2 gap-2 text-xs text-gray-500">
+            <div>供应商：{{ selectedLog.spec.provider }}</div>
+            <div>模型：{{ selectedLog.spec.model }}</div>
+            <div>耗时：{{ formatDuration(selectedLog.status?.durationMs) }}</div>
+            <div>Tokens：{{ selectedLog.status?.totalTokens || 0 }}</div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <VButton @click="showResponseModal = false">关闭</VButton>
+      </template>
+    </VModal>
   </div>
 </template>

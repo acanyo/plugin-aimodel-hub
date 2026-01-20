@@ -143,6 +143,15 @@ public class AiChatLogService {
     }
 
     /**
+     * 清空所有日志
+     */
+    public Mono<Void> clearLogs() {
+        return client.listAll(AiChatLog.class, new ListOptions(), null)
+            .flatMap(client::delete)
+            .then();
+    }
+
+    /**
      * 截取字符串
      */
     private String truncate(String str, int maxLength) {

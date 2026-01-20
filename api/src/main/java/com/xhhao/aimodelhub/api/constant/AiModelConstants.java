@@ -25,7 +25,7 @@ public final class AiModelConstants {
     /**
      * 响应摘要最大长度
      */
-    public static final int RESPONSE_SUMMARY_MAX_LENGTH = 200;
+    public static final int RESPONSE_SUMMARY_MAX_LENGTH = 500;
 
     /**
      * 用户消息最大长度

@@ -133,6 +133,10 @@ public class AiChatLog extends AbstractExtension {
         /**
          * 文本嵌入
          */
-        EMBEDDING
+        EMBEDDING,
+        /**
+         * 图像生成
+         */
+        IMAGE
     }
 }
