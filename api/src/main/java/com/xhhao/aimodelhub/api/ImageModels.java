@@ -1,5 +1,6 @@
 package com.xhhao.aimodelhub.api;
 
+import com.xhhao.aimodelhub.api.internal.ImageModelFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -85,6 +86,39 @@ public final class ImageModels {
      */
     public static Mono<List<String>> generate(Provider provider, String prompt, ImageOptions options) {
         checkInitialized();
+        return getModel(provider).flatMap(model -> model.generate(prompt, options));
+    }
+
+    /**
+     * 生成图像（自定义 apiKey 和 model）
+     *
+     * @param provider 供应商
+     * @param apiKey   API Key
+     * @param model    模型名称
+     * @param prompt   图像描述
+     * @return 生成的图像 URL 列表
+     */
+    public static Mono<List<String>> generate(Provider provider, String apiKey, String model, String prompt) {
+        checkInitialized();
+        return factory.create(provider.name().toLowerCase(), 
+                ImageOptions.builder().apiKey(apiKey).model(model).build())
+            .flatMap(m -> m.generate(prompt, ImageOptions.defaults()));
+    }
+
+    /**
+     * 生成图像（使用完整配置）
+     *
+     * @param provider 供应商
+     * @param options  包含 apiKey 的完整配置
+     * @param prompt   图像描述
+     * @return 生成的图像 URL 列表
+     */
+    public static Mono<List<String>> generate(Provider provider, ImageOptions options, String prompt) {
+        checkInitialized();
+        if (options.getApiKey() != null) {
+            return factory.create(provider.name().toLowerCase(), options)
+                .flatMap(m -> m.generate(prompt, options));
+        }
         return getModel(provider).flatMap(model -> model.generate(prompt, options));
     }
 

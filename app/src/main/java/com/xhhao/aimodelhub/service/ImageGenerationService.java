@@ -1,6 +1,6 @@
 package com.xhhao.aimodelhub.service;
 
-import com.xhhao.aimodelhub.api.ImageModelFactory;
+import com.xhhao.aimodelhub.api.internal.ImageModelFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

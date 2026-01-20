@@ -1,9 +1,14 @@
-package com.xhhao.aimodelhub.api;
+package com.xhhao.aimodelhub.api.internal;
 
+import com.xhhao.aimodelhub.api.ChatModel;
+import com.xhhao.aimodelhub.api.ChatOptions;
 import reactor.core.publisher.Mono;
 
 /**
- * 聊天模型工厂接口
+ * 聊天模型工厂接口（内部使用）
+ * <p>
+ * 此接口仅供插件内部实现使用，外部插件请使用 {@link com.xhhao.aimodelhub.api.ChatModels} 静态方法。
+ * </p>
  *
  * @author Handsome
  * @since 1.0.0
@@ -16,14 +21,29 @@ public interface ChatModelFactory {
     Mono<ChatModel> openai();
 
     /**
+     * 获取 OpenAI 模型（指定模型名称）
+     */
+    Mono<ChatModel> openai(String modelName);
+
+    /**
      * 获取硅基流动模型（响应式）
      */
     Mono<ChatModel> siliconflow();
 
     /**
+     * 获取硅基流动模型（指定模型名称）
+     */
+    Mono<ChatModel> siliconflow(String modelName);
+
+    /**
      * 获取智谱AI模型（响应式）
      */
     Mono<ChatModel> zhipu();
+
+    /**
+     * 获取智谱AI模型（指定模型名称）
+     */
+    Mono<ChatModel> zhipu(String modelName);
 
     /**
      * 获取带有记忆的模型（响应式）

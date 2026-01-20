@@ -1,7 +1,7 @@
 package com.xhhao.aimodelhub.endpoint;
 
 import com.xhhao.aimodelhub.api.ChatModel;
-import com.xhhao.aimodelhub.api.ChatModelFactory;
+import com.xhhao.aimodelhub.api.internal.ChatModelFactory;
 import com.xhhao.aimodelhub.service.common.RateLimiterService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,14 @@
-package com.xhhao.aimodelhub.api;
+package com.xhhao.aimodelhub.api.internal;
 
+import com.xhhao.aimodelhub.api.ImageModel;
+import com.xhhao.aimodelhub.api.ImageOptions;
 import reactor.core.publisher.Mono;
 
 /**
- * 图像模型工厂接口
+ * 图像模型工厂接口（内部使用）
+ * <p>
+ * 此接口仅供插件内部实现使用，外部插件请使用 {@link com.xhhao.aimodelhub.api.ImageModels} 静态方法。
+ * </p>
  *
  * @author Handsome
  * @since 1.0.0

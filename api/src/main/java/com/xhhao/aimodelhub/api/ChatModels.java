@@ -1,5 +1,6 @@
 package com.xhhao.aimodelhub.api;
 
+import com.xhhao.aimodelhub.api.internal.ChatModelFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

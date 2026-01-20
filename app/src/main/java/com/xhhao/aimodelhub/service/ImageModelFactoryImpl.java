@@ -1,8 +1,8 @@
 package com.xhhao.aimodelhub.service;
 
 import com.xhhao.aimodelhub.api.ImageModel;
-import com.xhhao.aimodelhub.api.ImageModelFactory;
 import com.xhhao.aimodelhub.api.ImageOptions;
+import com.xhhao.aimodelhub.api.internal.ImageModelFactory;
 import com.xhhao.aimodelhub.config.SettingConfigGetter;
 import com.xhhao.aimodelhub.service.common.AiChatLogService;
 import com.xhhao.aimodelhub.service.common.LoggingImageModel;

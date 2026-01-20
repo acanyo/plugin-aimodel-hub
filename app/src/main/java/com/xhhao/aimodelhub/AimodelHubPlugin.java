@@ -1,9 +1,9 @@
 package com.xhhao.aimodelhub;
 
-import com.xhhao.aimodelhub.api.ChatModelFactory;
 import com.xhhao.aimodelhub.api.ChatModels;
-import com.xhhao.aimodelhub.api.ImageModelFactory;
 import com.xhhao.aimodelhub.api.ImageModels;
+import com.xhhao.aimodelhub.api.internal.ChatModelFactory;
+import com.xhhao.aimodelhub.api.internal.ImageModelFactory;
 import com.xhhao.aimodelhub.extension.AiChatLog;
 import org.springframework.stereotype.Component;
 import run.halo.app.extension.SchemeManager;

@@ -1,8 +1,8 @@
 package com.xhhao.aimodelhub.service;
 
 import com.xhhao.aimodelhub.api.ChatModel;
-import com.xhhao.aimodelhub.api.ChatModelFactory;
 import com.xhhao.aimodelhub.api.ChatOptions;
+import com.xhhao.aimodelhub.api.internal.ChatModelFactory;
 import com.xhhao.aimodelhub.api.constant.AiModelConstants;
 import com.xhhao.aimodelhub.api.exception.AiModelException;
 import com.xhhao.aimodelhub.config.SettingConfigGetter;
@@ -109,6 +109,61 @@ public class ChatModelFactoryImpl implements ChatModelFactory {
                 return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.ZHIPU));
             })
             .doOnError(e -> log.error("创建智谱AI模型失败", e));
+    }
+
+    @Override
+    public Mono<ChatModel> openai(String modelName) {
+        return configGetter.getTextModelConfig()
+            .flatMap(config -> {
+                if (config == null || config.getOpenai() == null) {
+                    return Mono.error(AiModelException.configError("OpenAI 未配置"));
+                }
+                var openaiConfig = config.getOpenai();
+                String model = modelName != null ? modelName : AiModelConstants.DEFAULT_OPENAI_MODEL;
+                OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+                    .apiKey(openaiConfig.getApiKey())
+                    .baseUrl(openaiConfig.getBaseUrl())
+                    .modelName(model)
+                    .build();
+                return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.OPENAI));
+            });
+    }
+
+    @Override
+    public Mono<ChatModel> siliconflow(String modelName) {
+        return configGetter.getTextModelConfig()
+            .flatMap(config -> {
+                if (config == null || config.getSiliconflow() == null) {
+                    return Mono.error(AiModelException.configError("硅基流动未配置"));
+                }
+                var sfConfig = config.getSiliconflow();
+                String model = modelName != null ? modelName : AiModelConstants.DEFAULT_SILICONFLOW_MODEL;
+                OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+                    .apiKey(sfConfig.getApiKey())
+                    .baseUrl(AiModelConstants.SILICONFLOW_BASE_URL)
+                    .modelName(model)
+                    .build();
+                return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.SILICONFLOW));
+            });
+    }
+
+    @Override
+    public Mono<ChatModel> zhipu(String modelName) {
+        return configGetter.getTextModelConfig()
+            .flatMap(config -> {
+                if (config == null || config.getZhipu() == null) {
+                    return Mono.error(AiModelException.configError("智谱AI未配置"));
+                }
+                var zhipuConfig = config.getZhipu();
+                String model = modelName != null ? modelName : "glm-4-flash";
+                OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+                    .apiKey(zhipuConfig.getApiKey())
+                    .baseUrl("https://open.bigmodel.cn/api/paas/v4")
+                    .modelName(model)
+                    .chatCompletionsPath("/chat/completions")
+                    .build();
+                return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.ZHIPU));
+            });
     }
 
     @Override
