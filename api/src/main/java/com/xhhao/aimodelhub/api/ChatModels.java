@@ -150,6 +150,7 @@ public final class ChatModels {
         return switch (provider) {
             case OPENAI -> factory.openai();
             case SILICONFLOW -> factory.siliconflow();
+            case ZHIPU -> factory.zhipu();
         };
     }
 
@@ -164,6 +165,7 @@ public final class ChatModels {
      */
     public enum Provider {
         OPENAI,
-        SILICONFLOW
+        SILICONFLOW,
+        ZHIPU
     }
 }

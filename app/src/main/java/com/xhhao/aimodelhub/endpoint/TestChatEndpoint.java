@@ -113,6 +113,7 @@ public class TestChatEndpoint implements CustomEndpoint {
         return switch (actualProvider) {
             case "openai" -> chatModelFactory.openai();
             case "siliconflow" -> chatModelFactory.siliconflow();
+            case "zhipu" -> chatModelFactory.zhipu();
             default -> Mono.error(new IllegalArgumentException("不支持的供应商: " + actualProvider));
         };
     }

@@ -34,7 +34,7 @@ import java.util.Map;
 @Getter
 public class OpenAiCompatibleChatModel implements ChatModel {
 
-    private static final String CHAT_COMPLETIONS_PATH = "/v1/chat/completions";
+    private static final String DEFAULT_CHAT_COMPLETIONS_PATH = "/v1/chat/completions";
     private static final String SSE_DONE_SIGNAL = "[DONE]";
     private static final String AUTH_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -65,6 +65,7 @@ public class OpenAiCompatibleChatModel implements ChatModel {
     private final Integer seed;
     private final String user;
     private final Map<String, Integer> logitBias;
+    private final String chatCompletionsPath;
 
     /**
      * 缓存的 WebClient 实例
@@ -77,10 +78,12 @@ public class OpenAiCompatibleChatModel implements ChatModel {
                                      Duration timeout, Integer maxRetries,
                                      Double temperature, Double topP, Integer maxTokens, Integer maxCompletionTokens,
                                      Double frequencyPenalty, Double presencePenalty, List<String> stop,
-                                     Integer seed, String user, Map<String, Integer> logitBias) {
+                                     Integer seed, String user, Map<String, Integer> logitBias,
+                                     String chatCompletionsPath) {
         this.apiKey = apiKey;
         this.modelName = modelName;
         this.baseUrl = baseUrl;
+        this.chatCompletionsPath = chatCompletionsPath != null ? chatCompletionsPath : DEFAULT_CHAT_COMPLETIONS_PATH;
         this.customHeaders = customHeaders;
         this.organizationId = organizationId;
         this.projectId = projectId;
@@ -105,7 +108,7 @@ public class OpenAiCompatibleChatModel implements ChatModel {
     public Mono<OpenAiChatResponse> chat(OpenAiChatRequest request) {
         prepareRequest(request, false);
         return webClient.post()
-            .uri(CHAT_COMPLETIONS_PATH)
+            .uri(chatCompletionsPath)
             .bodyValue(request)
             .retrieve()
             .bodyToMono(OpenAiChatResponse.class);
@@ -117,7 +120,7 @@ public class OpenAiCompatibleChatModel implements ChatModel {
     public Flux<OpenAiChatResponse> chatStream(OpenAiChatRequest request) {
         prepareRequest(request, true);
         return webClient.post()
-            .uri(CHAT_COMPLETIONS_PATH)
+            .uri(chatCompletionsPath)
             .accept(MediaType.TEXT_EVENT_STREAM)
             .bodyValue(request)
             .retrieve()

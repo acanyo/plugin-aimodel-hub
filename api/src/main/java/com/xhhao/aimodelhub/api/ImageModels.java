@@ -31,6 +31,7 @@ import java.util.List;
 public final class ImageModels {
 
     private static ImageModelFactory factory;
+    private static Provider defaultProvider = Provider.SILICONFLOW;
 
     private ImageModels() {
     }
@@ -43,13 +44,24 @@ public final class ImageModels {
     }
 
     /**
-     * 生成图像（使用默认选项）
+     * 生成图像（使用默认供应商和选项）
      *
      * @param prompt 图像描述
      * @return 生成的图像 URL 列表
      */
     public static Mono<List<String>> generate(String prompt) {
-        return generate(prompt, ImageOptions.defaults());
+        return generate(defaultProvider, prompt, ImageOptions.defaults());
+    }
+
+    /**
+     * 生成图像（指定供应商）
+     *
+     * @param provider 供应商
+     * @param prompt   图像描述
+     * @return 生成的图像 URL 列表
+     */
+    public static Mono<List<String>> generate(Provider provider, String prompt) {
+        return generate(provider, prompt, ImageOptions.defaults());
     }
 
     /**
@@ -60,13 +72,56 @@ public final class ImageModels {
      * @return 生成的图像 URL 列表
      */
     public static Mono<List<String>> generate(String prompt, ImageOptions options) {
+        return generate(defaultProvider, prompt, options);
+    }
+
+    /**
+     * 生成图像（指定供应商和选项）
+     *
+     * @param provider 供应商
+     * @param prompt   图像描述
+     * @param options  生成选项
+     * @return 生成的图像 URL 列表
+     */
+    public static Mono<List<String>> generate(Provider provider, String prompt, ImageOptions options) {
         checkInitialized();
-        return factory.openai().flatMap(model -> model.generate(prompt, options));
+        return getModel(provider).flatMap(model -> model.generate(prompt, options));
+    }
+
+    /**
+     * 设置默认供应商
+     */
+    public static void setDefaultProvider(Provider provider) {
+        defaultProvider = provider;
+    }
+
+    /**
+     * 获取默认供应商
+     */
+    public static Provider getDefaultProvider() {
+        return defaultProvider;
+    }
+
+    private static Mono<ImageModel> getModel(Provider provider) {
+        return switch (provider) {
+            case OPENAI -> factory.openai();
+            case ZHIPU -> factory.zhipu();
+            case SILICONFLOW -> factory.siliconflow();
+        };
     }
 
     private static void checkInitialized() {
         if (factory == null) {
             throw new IllegalStateException("ImageModels 未初始化，请确保 AI Model Hub 插件已启动");
         }
+    }
+
+    /**
+     * 图像模型供应商枚举
+     */
+    public enum Provider {
+        OPENAI,
+        ZHIPU,
+        SILICONFLOW
     }
 }

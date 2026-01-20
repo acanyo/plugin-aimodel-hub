@@ -33,11 +33,14 @@ public class SettingConfigGetter {
     public static class TextModelConfig {
         private OpenAiConfig openai;
         private SiliconFlowConfig siliconflow;
+        private ZhipuConfig zhipu;
     }
 
     @Data
     public static class ImageModelConfig {
         private ImageOpenAiConfig openai;
+        private ImageZhipuConfig zhipu;
+        private ImageSiliconFlowConfig siliconflow;
     }
 
     @Data
@@ -56,6 +59,26 @@ public class SettingConfigGetter {
     @Data
     public static class ImageOpenAiConfig {
         private String baseUrl;
+        private String apiKey;
+        private String model;
+        private String size;
+    }
+
+    @Data
+    public static class ZhipuConfig {
+        private String apiKey;
+        private String model;
+    }
+
+    @Data
+    public static class ImageZhipuConfig {
+        private String apiKey;
+        private String model;
+        private String size;
+    }
+
+    @Data
+    public static class ImageSiliconFlowConfig {
         private String apiKey;
         private String model;
         private String size;

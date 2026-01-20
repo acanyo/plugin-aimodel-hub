@@ -29,12 +29,20 @@ const streamLoading = ref(false)
 const providers = [
   { label: '硅基流动', value: 'siliconflow' },
   { label: 'OpenAI', value: 'openai' },
+  { label: '智谱AI', value: 'zhipu' },
 ]
 
 // 图像生成相关
 const imagePrompt = ref('')
+const imageProvider = ref('siliconflow')
 const imageLoading = ref(false)
 const images = ref<string[]>([])
+
+const imageProviders = [
+  { label: '硅基流动 (FLUX)', value: 'siliconflow' },
+  { label: 'OpenAI (DALL-E)', value: 'openai' },
+  { label: '智谱AI (CogView)', value: 'zhipu' },
+]
 
 const testSimpleChat = async () => {
   if (!message.value.trim()) {
@@ -155,6 +163,7 @@ const generateImage = async () => {
       '/apis/console.api.aimodel-hub.xhhao.com/v1alpha1/images/generate',
       {
         prompt: imagePrompt.value,
+        provider: imageProvider.value,
       }
     )
     
@@ -317,9 +326,16 @@ const clearAll = () => {
             validation-visibility="blur"
           />
 
-          <div class=":uno: rounded-lg bg-amber-50 p-4">
-            <p class=":uno: text-sm text-amber-800">
-              图像生成需要消耗 OpenAI API 额度，DALL-E 3 每张约 $0.04-0.12。
+          <FormKit
+            v-model="imageProvider"
+            type="select"
+            label="AI 供应商"
+            :options="imageProviders"
+          />
+
+          <div class=":uno: rounded-lg bg-blue-50 p-4">
+            <p class=":uno: text-sm text-blue-800">
+              硅基流动 FLUX 免费，智谱 CogView 免费，OpenAI DALL-E 每张约 $0.04-0.12
             </p>
           </div>
 

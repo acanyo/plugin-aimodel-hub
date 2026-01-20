@@ -47,7 +47,7 @@ public class ImageEndpoint implements CustomEndpoint {
                         .bodyValue(Map.of("success", false, "message", "请输入图像描述"));
                 }
 
-                return imageService.generateImage(req.getPrompt())
+                return imageService.generateImage(req.getProvider(), req.getPrompt())
                     .flatMap(urls -> ServerResponse.ok()
                         .bodyValue(Map.of(
                             "success", true,
@@ -64,5 +64,6 @@ public class ImageEndpoint implements CustomEndpoint {
     @Data
     public static class ImageGenerateRequest {
         private String prompt;
+        private String provider;
     }
 }

@@ -41,6 +41,11 @@ public class ChatModelFactoryImpl implements ChatModelFactory {
         return createSiliconFlowModel();
     }
 
+    @Override
+    public Mono<ChatModel> zhipu() {
+        return createZhipuModel();
+    }
+
     private Mono<ChatModel> createOpenAiModel() {
         return configGetter.getTextModelConfig()
             .flatMap(config -> {
@@ -83,11 +88,34 @@ public class ChatModelFactoryImpl implements ChatModelFactory {
             .doOnError(e -> log.error("创建硅基流动模型失败", e));
     }
 
+    private Mono<ChatModel> createZhipuModel() {
+        return configGetter.getTextModelConfig()
+            .flatMap(config -> {
+                if (config == null || config.getZhipu() == null) {
+                    return Mono.error(AiModelException.configError("智谱AI未配置，请在插件设置中配置 API Key"));
+                }
+                var zhipuConfig = config.getZhipu();
+                String model = zhipuConfig.getModel();
+                if (model == null || model.isBlank()) {
+                    model = "glm-4-flash";
+                }
+                OpenAiCompatibleChatModel delegate = OpenAiCompatibleChatModel.builder()
+                    .apiKey(zhipuConfig.getApiKey())
+                    .baseUrl("https://open.bigmodel.cn/api/paas/v4")
+                    .modelName(model)
+                    .chatCompletionsPath("/chat/completions")
+                    .build();
+                return Mono.just((ChatModel) new LoggingChatModel(delegate, logService, null, AiModelConstants.Provider.ZHIPU));
+            })
+            .doOnError(e -> log.error("创建智谱AI模型失败", e));
+    }
+
     @Override
     public Mono<ChatModel> withMemory(String provider, String systemPrompt) {
         Mono<ChatModel> delegateMono = switch (provider) {
             case "openai" -> openai();
             case "siliconflow" -> siliconflow();
+            case "zhipu" -> zhipu();
             default -> Mono.error(new IllegalArgumentException("不支持的供应商: " + provider));
         };
         return delegateMono.map(delegate -> new StatefulChatModelImpl(delegate, systemPrompt));

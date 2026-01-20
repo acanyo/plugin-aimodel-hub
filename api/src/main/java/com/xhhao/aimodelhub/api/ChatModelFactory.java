@@ -21,6 +21,11 @@ public interface ChatModelFactory {
     Mono<ChatModel> siliconflow();
 
     /**
+     * 获取智谱AI模型（响应式）
+     */
+    Mono<ChatModel> zhipu();
+
+    /**
      * 获取带有记忆的模型（响应式）
      *
      * @param provider     提供商名称(openai/siliconflow)

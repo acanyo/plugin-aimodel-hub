@@ -58,6 +58,7 @@ public final class AiModelConstants {
     public static final class Provider {
         public static final String OPENAI = "openai";
         public static final String SILICONFLOW = "siliconflow";
+        public static final String ZHIPU = "zhipu";
         public static final String CLAUDE = "claude";
         public static final String GEMINI = "gemini";
 

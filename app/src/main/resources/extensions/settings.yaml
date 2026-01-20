@@ -98,6 +98,58 @@ spec:
                 method: GET
                 fieldSelectorKey: name
 
+        - $formkit: group
+          name: zhipu
+          label: 智谱AI
+          help: 查看智谱AI帮助文档
+          __raw__sectionsSchema:
+            help:
+              children:
+                - $el: span
+                  children: "查看 "
+                - $el: a
+                  children: "智谱AI帮助文档"
+                  attrs:
+                    href: "https://open.bigmodel.cn/dev/howuse/introduction"
+                    target: "_blank"
+                    style:
+                      color: "#1890ff"
+          children:
+            - $formkit: password
+              name: apiKey
+              label: API Key
+              help: 点击这里获取密钥
+              __raw__sectionsSchema:
+                help:
+                  children:
+                    - $el: a
+                      children: "点击这里获取密钥"
+                      attrs:
+                        href: "https://open.bigmodel.cn/usercenter/apikeys"
+                        target: "_blank"
+                        style:
+                          color: "#1890ff"
+              placeholder: xxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxx
+
+            - $formkit: select
+              name: model
+              label: 默认模型
+              value: glm-4-flash
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: GLM-4-Flash (免费)
+                  value: glm-4-flash
+                - label: GLM-4-Air
+                  value: glm-4-air
+                - label: GLM-4
+                  value: glm-4
+                - label: GLM-4-Plus
+                  value: glm-4-plus
+                - label: GLM-3-Turbo
+                  value: glm-3-turbo
+
     - group: image
       label: 图像模型
       formSchema:
@@ -145,3 +197,119 @@ spec:
                   value: 1024x1792
                 - label: 1792×1024 (横版)
                   value: 1792x1024
+
+        - $formkit: group
+          name: zhipu
+          label: 智谱AI CogView
+          help: 使用智谱AI的 CogView 进行图像生成
+          children:
+            - $formkit: password
+              name: apiKey
+              label: API Key
+              help: 点击这里获取密钥
+              __raw__sectionsSchema:
+                help:
+                  children:
+                    - $el: a
+                      children: "点击这里获取密钥"
+                      attrs:
+                        href: "https://open.bigmodel.cn/usercenter/apikeys"
+                        target: "_blank"
+                        style:
+                          color: "#1890ff"
+              placeholder: xxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxx
+
+            - $formkit: select
+              name: model
+              label: 默认模型
+              value: cogview-3-flash
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: CogView-3-Flash (免费)
+                  value: cogview-3-flash
+                - label: CogView-3
+                  value: cogview-3
+                - label: CogView-3-Plus
+                  value: cogview-3-plus
+
+            - $formkit: select
+              name: size
+              label: 默认尺寸
+              value: 1024x1024
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: 1024×1024 (方形)
+                  value: 1024x1024
+                - label: 768×1344 (竖版)
+                  value: 768x1344
+                - label: 1344×768 (横版)
+                  value: 1344x768
+                - label: 864×1152
+                  value: 864x1152
+                - label: 1152×864
+                  value: 1152x864
+
+        - $formkit: group
+          name: siliconflow
+          label: 硅基流动
+          help: 使用硅基流动的 FLUX/SD 进行图像生成
+          children:
+            - $formkit: password
+              name: apiKey
+              label: API Key
+              help: 点击这里获取密钥
+              __raw__sectionsSchema:
+                help:
+                  children:
+                    - $el: a
+                      children: "点击这里获取密钥"
+                      attrs:
+                        href: "https://cloud.siliconflow.cn/account/ak"
+                        target: "_blank"
+                        style:
+                          color: "#1890ff"
+              placeholder: sk-xxxxxxxxxxxxxxxx
+
+            - $formkit: select
+              name: model
+              label: 默认模型
+              value: black-forest-labs/FLUX.1-schnell
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: FLUX.1-schnell (免费)
+                  value: black-forest-labs/FLUX.1-schnell
+                - label: FLUX.1-dev
+                  value: black-forest-labs/FLUX.1-dev
+                - label: Stable Diffusion 3.5 Large Turbo
+                  value: stabilityai/stable-diffusion-3-5-large-turbo
+                - label: Stable Diffusion 3.5 Large
+                  value: stabilityai/stable-diffusion-3-5-large
+                - label: Kolors
+                  value: Kwai-Kolors/Kolors
+
+            - $formkit: select
+              name: size
+              label: 默认尺寸
+              value: 1024x1024
+              searchable: true
+              allowCreate: true
+              clearable: true
+              options:
+                - label: 1024×1024 (方形)
+                  value: 1024x1024
+                - label: 512×512
+                  value: 512x512
+                - label: 768×512 (横版)
+                  value: 768x512
+                - label: 512×768 (竖版)
+                  value: 512x768
+                - label: 768×1024
+                  value: 768x1024
+                - label: 1024×768
+                  value: 1024x768
